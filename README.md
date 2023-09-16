@@ -1,7 +1,6 @@
 # OSTree container in Arch Linux using Podman
 
-Massive shoutout to @M1cha for making this possible
-https://github.com/M1cha/archlinux-ostree
+Massive shoutout to @M1cha for making this possible (https://github.com/M1cha/archlinux-ostree)
 
 # Overview
 
@@ -26,16 +25,19 @@ $ git https://github.com/GrabbenD/ostree-demo.git && cd ostree-demo
 
 3. **Find `ID-LINK` for installation device where OSTree image will be deployed:**
 
-> `$ lsblk -o NAME,TYPE,FSTYPE,MODEL,ID-LINK,SIZE,MOUNTPOINTS,LABEL`
-> NAME   TYPE FSTYPE   MODEL           ID-LINK                                                  SIZE MOUNTPOINTS           LABEL
-> sda    disk          Virtual Disk    **scsi-36002248069ffe44474a7a01ecf21298b**                   127G
-> ├─sda1 part vfat                     scsi-36002248069ffe44474a7a01ecf21298b-part1             256M                       SYS_BOOT
-> ├─sda2 part ext4                     scsi-36002248069ffe44474a7a01ecf21298b-part2              95G                       SYS_HOME
-> └─sda3 part ext4                     scsi-36002248069ffe44474a7a01ecf21298b-part3            31.7G                       SYS_ROOT
+```console
+lsblk -o NAME,TYPE,FSTYPE,MODEL,ID-LINK,SIZE,MOUNTPOINTS,LABEL`
+NAME   TYPE FSTYPE   MODEL           ID-LINK                                                  SIZE MOUNTPOINTS           LABEL
+sda    disk          Virtual Disk    **scsi-36002248069ffe44474a7a01ecf21298b**                   127G
+├─sda1 part vfat                     scsi-36002248069ffe44474a7a01ecf21298b-part1             256M                       SYS_BOOT
+├─sda2 part ext4                     scsi-36002248069ffe44474a7a01ecf21298b-part2              95G                       SYS_HOME
+└─sda3 part ext4                     scsi-36002248069ffe44474a7a01ecf21298b-part3            31.7G                       SYS_ROOT
+```
 
 4. **Perform clean installation:**
 
 **⚠️ WARNING ⚠️**
+
 `install.sh` is destrucive and has no promps while partitioning, proceed with caution:
 
 ```console
