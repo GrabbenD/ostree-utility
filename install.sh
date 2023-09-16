@@ -74,7 +74,6 @@ grub-install --target=x86_64-efi --efi-directory=${OSTREE_SYS_ROOT}/boot/efi --r
 # | Todo: improve grub-mkconfig
 # | Todo: add /home mount
 # | Todo: persist podman cache
-pacman --noconfirm --needed -S arch-install-scripts
 export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/archlinux/deploy/*|head -n 1)
 rm -rfv ${OSTREE_SYS_PATH}/boot/*
 mount --mkdir --rbind ${OSTREE_SYS_ROOT}/boot ${OSTREE_SYS_PATH}/boot
