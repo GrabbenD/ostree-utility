@@ -34,7 +34,7 @@ mkfs.ext4 -L SYS_ROOT -F ${OSTREE_DEV_ROOT}
 mount --mkdir ${OSTREE_DEV_ROOT} ${OSTREE_SYS_ROOT}
 mount --mkdir ${OSTREE_DEV_BOOT} ${OSTREE_SYS_ROOT}/boot/efi
 
-# [LIVECD]: Support for overlay storage driver
+# [LIVECD]: SUPPORT FOR OVERLAY STORAGE DRIVER
 if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
     pacman --noconfirm --needed -S "fuse-overlayfs"
     export TMPDIR="/tmp/podman"
@@ -46,14 +46,14 @@ fi
 
 # [OSTREE]: IMAGE
 # | Todo: add Pacman cache
-# | Todo: delete /etc in Contailerfile
+# | Todo: delete /etc in Contailerfile (https://github.com/containers/podman/issues/20001)
 # | Todo: use tar format (`podman build -f Containerfile -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 pacman --noconfirm --needed -S podman
 rm -rf ${OSTREE_SYS_BUILD}
 podman ${PODMAN_ARGS[@]} build -f Containerfile -t rootfs
 mkdir ${OSTREE_SYS_BUILD}
 podman ${PODMAN_ARGS[@]} export $(podman ${PODMAN_ARGS[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
-rm -rf ${OSTREE_SYS_BUILD}/etc
+#rm -rf ${OSTREE_SYS_BUILD}/etc
 
 # [OSTREE]: REPO INITALIZATION
 pacman --noconfirm --needed -S ostree wget which 
@@ -70,7 +70,7 @@ ostree admin os-init --sysroot=${OSTREE_SYS_ROOT} archlinux
 ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --no-merge --retain archlinux/latest
 grub-install --target=x86_64-efi --efi-directory=${OSTREE_SYS_ROOT}/boot/efi --removable --boot-directory=${OSTREE_SYS_ROOT}/boot/efi/EFI --bootloader-id=archlinux ${OSTREE_DEV_BOOT}
 
-# [BOOTLOADER]: Boot entries
+# [BOOTLOADER]: BOOT ENTRIES
 # | Todo: improve grub-mkconfig
 # | Todo: add /home mount
 # | Todo: persist podman cache
