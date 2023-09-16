@@ -53,7 +53,7 @@ rm -rf ${OSTREE_SYS_BUILD}
 podman ${PODMAN_ARGS[@]} build -f Containerfile -t rootfs
 mkdir ${OSTREE_SYS_BUILD}
 podman ${PODMAN_ARGS[@]} export $(podman ${PODMAN_ARGS[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
-#rm -rf ${OSTREE_SYS_BUILD}/etc
+rm -rf ${OSTREE_SYS_BUILD}/etc
 
 # [OSTREE]: REPO INITALIZATION
 pacman --noconfirm --needed -S ostree wget which 
