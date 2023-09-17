@@ -42,5 +42,5 @@ This serves to demonstrates how to:
    
    ```console
    $ chmod +x ostree.sh
-   $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh
+   $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
    ```
