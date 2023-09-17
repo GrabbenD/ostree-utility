@@ -27,11 +27,11 @@ This serves to demonstrates how to:
    
    ```console
    lsblk -o NAME,TYPE,FSTYPE,MODEL,ID-LINK,SIZE,MOUNTPOINTS,LABEL
-   NAME   TYPE FSTYPE   MODEL           ID-LINK                                                  SIZE MOUNTPOINTS           LABEL
-   sda    disk          Virtual Disk    scsi-36002248069ffe44474a7a01ecf21298b                   127G
-   ├─sda1 part vfat                     scsi-36002248069ffe44474a7a01ecf21298b-part1             256M                       SYS_BOOT
-   ├─sda2 part ext4                     scsi-36002248069ffe44474a7a01ecf21298b-part2              95G                       SYS_HOME
-   └─sda3 part ext4                     scsi-36002248069ffe44474a7a01ecf21298b-part3            31.7G                       SYS_ROOT
+   NAME   TYPE FSTYPE MODEL        ID-LINK                                        SIZE MOUNTPOINTS LABEL
+   sdb    disk        Virtual Disk scsi-360022480c22be84f8a61b39bbaed612f         300G
+   ├─sdb1 part vfat                scsi-360022480c22be84f8a61b39bbaed612f-part1   256M             SYS_BOOT
+   ├─sdb2 part ext4                scsi-360022480c22be84f8a61b39bbaed612f-part2  24.7G             SYS_HOME
+   └─sdb3 part ext4                scsi-360022480c22be84f8a61b39bbaed612f-part3   275G             SYS_ROOT
    ```
    
 4. **Perform clean installation:**
@@ -42,5 +42,5 @@ This serves to demonstrates how to:
    
    ```console
    $ chmod +x install.sh
-   $ sudo OSTREE_DEV_SCSI=scsi-36002248069ffe44474a7a01ecf21298b ./install.sh
+   $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./install.sh
    ```

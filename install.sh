@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
-set -e
 set -u
+set -e
 
 # [ENVIRONMENT]: REQUIRED
 # OSTREE_DEV_SCSI=
@@ -21,14 +21,14 @@ parted -a optimal -s ${OSTREE_DEV_DISK} -- \
     mklabel gpt \
     mkpart "SYS_BOOT" fat32 0% 257MiB \
     set 1 esp on \
-    mkpart "SYS_HOME" ext4 257MiB 75% \
-    mkpart "SYS_ROOT" ext4 75% 100%
+    mkpart "SYS_ROOT" ext4 257MiB 25GiB \
+    mkpart "SYS_HOME" ext4 25GiB 100%
 
 # [DISK]: FILESYSTEM
 pacman --noconfirm --needed -S dosfstools e2fsprogs
 mkfs.vfat -n SYS_BOOT -F 32 ${OSTREE_DEV_BOOT}
-mkfs.ext4 -L SYS_HOME -F ${OSTREE_DEV_HOME}
 mkfs.ext4 -L SYS_ROOT -F ${OSTREE_DEV_ROOT}
+mkfs.ext4 -L SYS_HOME -F ${OSTREE_DEV_HOME}
 
 # [DISK]: MOUNT
 mount --mkdir ${OSTREE_DEV_ROOT} ${OSTREE_SYS_ROOT}
@@ -72,7 +72,6 @@ grub-install --target=x86_64-efi --efi-directory=${OSTREE_SYS_ROOT}/boot/efi --r
 
 # [BOOTLOADER]: BOOT ENTRIES
 # | Todo: improve grub-mkconfig
-# | Todo: add /home mount
 # | Todo: persist podman cache
 export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/archlinux/deploy/*|head -n 1)
 rm -rfv ${OSTREE_SYS_PATH}/boot/*

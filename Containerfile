@@ -63,6 +63,11 @@ RUN pacman --noconfirm -S \
 RUN curl https://raw.githubusercontent.com/ostreedev/ostree/v2023.6/src/boot/grub2/grub2-15_ostree -o /etc/grub.d/15_ostree && \
     chmod +x /etc/grub.d/15_ostree
 
+# Mount disk locations
+RUN echo "LABEL=SYS_ROOT /         ext4 rw,relatime                                                                                           0 1" >> /etc/fstab && \
+    echo "LABEL=SYS_HOME /home     ext4 rw,relatime                                                                                           0 2" >> /etc/fstab && \
+    echo "LABEL=SYS_BOOT /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
+
 ## |
 ## | OSTREEIFY
 ## |
