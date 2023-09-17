@@ -38,9 +38,9 @@ This serves to demonstrates how to:
    
    **⚠️ WARNING ⚠️**
    
-   `install.sh` is destrucive and has no promps while partitioning, proceed with caution:
+   `ostree.sh` is destrucive and has no promps while partitioning, proceed with caution:
    
    ```console
-   $ chmod +x install.sh
-   $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./install.sh
+   $ chmod +x ostree.sh
+   $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh
    ```
