@@ -129,7 +129,8 @@ RUN rm -r /var/*
 RUN mkdir /sysroot && \
     ln -s sysroot/ostree /ostree
 
-RUN mv /etc /usr/
+# Skip 'Device or resource busy' errors
+RUN mv /etc /usr/ || :
 
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
     echo $moduledir && \
