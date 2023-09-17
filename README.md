@@ -9,6 +9,7 @@ This serves to demonstrates how to:
 2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system
 3. Generate OSTree repository in a empty filesystem
 4. Integrate OSTree with GRUB2 bootloader
+5. Upgrade existing installation with a rootfs image
 
 # Usage
 
@@ -43,4 +44,12 @@ This serves to demonstrates how to:
    ```console
    $ chmod +x ostree.sh
    $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
+   ```
+   
+5. **Upgrade existing installation:**
+   
+   While booted into a OSTree system, use:
+   
+   ```console
+   $ sudo ./ostree.sh upgrade
    ```
