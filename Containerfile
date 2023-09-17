@@ -3,6 +3,9 @@
 # |
 
 FROM archlinux:base AS rootfs
+ARG OSTREE_SYS_BOOT_LABEL
+ARG OSTREE_SYS_ROOT_LABEL
+ARG OSTREE_SYS_HOME_LABEL
 
 # Remove container specific storage optimization in Pacman
 RUN sed -i -e 's|^NoExtract.*||g' /etc/pacman.conf && \
@@ -64,9 +67,9 @@ RUN curl https://raw.githubusercontent.com/ostreedev/ostree/v2023.6/src/boot/gru
     chmod +x /etc/grub.d/15_ostree
 
 # Mount disk locations
-RUN echo "LABEL=SYS_ROOT /         ext4 rw,relatime                                                                                           0 1" >> /etc/fstab && \
-    echo "LABEL=SYS_HOME /home     ext4 rw,relatime                                                                                           0 2" >> /etc/fstab && \
-    echo "LABEL=SYS_BOOT /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
+RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         ext4 rw,relatime                                                                                           0 1" >> /etc/fstab && \
+    echo "LABEL=${OSTREE_SYS_HOME_LABEL} /home     ext4 rw,relatime                                                                                           0 2" >> /etc/fstab && \
+    echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 ## |
 ## | OSTREEIFY

@@ -11,8 +11,13 @@ function ENV_OPTS_CREATE {
     # Configurable
     export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:=/dev/disk/by-id/${OSTREE_DEV_SCSI}}
     export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:=${OSTREE_DEV_DISK}-part1}
-    export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:=${OSTREE_DEV_DISK}-part2}
     export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:=${OSTREE_DEV_DISK}-part3}
+    export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:=${OSTREE_DEV_DISK}-part2}
+
+    export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:=SYS_BOOT}
+    export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:=SYS_ROOT}
+    export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:=SYS_HOME}
+
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/mnt}
     export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:=/tmp/rootfs}
 }
@@ -32,18 +37,18 @@ function DISK_CREATE_LAYOUT {
     umount --lazy --recursive ${OSTREE_SYS_ROOT} || :
     parted -a optimal -s ${OSTREE_DEV_DISK} -- \
         mklabel gpt \
-        mkpart "SYS_BOOT" fat32 0% 257MiB \
+        mkpart ${OSTREE_SYS_BOOT_LABEL} fat32 0% 257MiB \
         set 1 esp on \
-        mkpart "SYS_ROOT" ext4 257MiB 25GiB \
-        mkpart "SYS_HOME" ext4 25GiB 100%
+        mkpart ${OSTREE_SYS_ROOT_LABEL} ext4 257MiB 25GiB \
+        mkpart ${OSTREE_SYS_HOME_LABEL} ext4 25GiB 100%
 }
 
 # [DISK]: FILESYSTEM (ESP+EXT4)
 function DISK_CREATE_FORMAT {
     ENV_DEPS_CREATE dosfstools e2fsprogs
-    mkfs.vfat -n SYS_BOOT -F 32 ${OSTREE_DEV_BOOT}
-    mkfs.ext4 -L SYS_ROOT -F ${OSTREE_DEV_ROOT}
-    mkfs.ext4 -L SYS_HOME -F ${OSTREE_DEV_HOME}
+    mkfs.vfat -n ${OSTREE_SYS_BOOT_LABEL} -F 32 ${OSTREE_DEV_BOOT}
+    mkfs.ext4 -L ${OSTREE_SYS_ROOT_LABEL} -F ${OSTREE_DEV_ROOT}
+    mkfs.ext4 -L ${OSTREE_SYS_HOME_LABEL} -F ${OSTREE_DEV_HOME}
 }
 
 # [DISK]: WORKDIR
@@ -62,7 +67,7 @@ function OSTREE_CREATE_REPO {
 }
 
 # [OSTREE]: CONTAINER
-# | Todo: delete /etc in Contailerfile (https://github.com/containers/podman/issues/20001)
+# | Todo: delete /etc in Containerfile (https://github.com/containers/podman/issues/20001)
 # | Todo: use tar format (`podman build -f Containerfile -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 function OSTREE_CREATE_IMAGE {
     # Add support for overlay storage driver in LiveCD
@@ -77,7 +82,12 @@ function OSTREE_CREATE_IMAGE {
 
     # Create rootfs directory (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_DEPS_CREATE podman
-    podman ${PODMAN_ARGS[@]} build -f Containerfile -t rootfs
+    podman ${PODMAN_ARGS[@]} build \
+        -f Containerfile \
+        -t rootfs \
+        --build-arg OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL} \
+        --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
+        --build-arg OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}
     rm -rf ${OSTREE_SYS_BUILD}
     mkdir ${OSTREE_SYS_BUILD}
     podman ${PODMAN_ARGS[@]} export $(podman ${PODMAN_ARGS[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
