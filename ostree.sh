@@ -20,6 +20,8 @@ function ENV_OPTS_CREATE {
 
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/mnt}
     export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:=/tmp/rootfs}
+
+    export SCRIPT_DIRECTORY=$(dirname "$0")
 }
 
 # [ENVIRONMENT]: DEPENDENCIES
@@ -83,7 +85,7 @@ function OSTREE_CREATE_IMAGE {
     # Create rootfs directory (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_DEPS_CREATE podman
     podman ${PODMAN_ARGS[@]} build \
-        -f Containerfile \
+        -f ${SCRIPT_DIRECTORY}/Containerfile \
         -t rootfs \
         --build-arg OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL} \
         --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
