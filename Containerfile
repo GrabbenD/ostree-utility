@@ -62,6 +62,9 @@ RUN pacman --noconfirm -S \
     which \
     podman
 
+# Native Overlay Diff for optimal Podman performance
+RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
+
 # Bootloader integration
 RUN curl https://raw.githubusercontent.com/ostreedev/ostree/v2023.6/src/boot/grub2/grub2-15_ostree -o /etc/grub.d/15_ostree && \
     chmod +x /etc/grub.d/15_ostree
