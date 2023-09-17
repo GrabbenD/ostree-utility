@@ -31,8 +31,8 @@ This serves to demonstrates how to:
    NAME   TYPE FSTYPE MODEL        ID-LINK                                        SIZE MOUNTPOINTS LABEL
    sdb    disk        Virtual Disk scsi-360022480c22be84f8a61b39bbaed612f         300G
    ├─sdb1 part vfat                scsi-360022480c22be84f8a61b39bbaed612f-part1   256M             SYS_BOOT
-   ├─sdb2 part ext4                scsi-360022480c22be84f8a61b39bbaed612f-part2  24.7G             SYS_HOME
-   └─sdb3 part ext4                scsi-360022480c22be84f8a61b39bbaed612f-part3   275G             SYS_ROOT
+   ├─sdb2 part xfs                 scsi-360022480c22be84f8a61b39bbaed612f-part2  24.7G             SYS_HOME
+   └─sdb3 part xfs                 scsi-360022480c22be84f8a61b39bbaed612f-part3   275G             SYS_ROOT
    ```
    
 4. **Perform clean installation:**

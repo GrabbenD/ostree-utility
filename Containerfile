@@ -52,7 +52,7 @@ RUN pacman --noconfirm -S \
     amd-ucode \
     \
 	dosfstools \
-    e2fsprogs \
+    xfsprogs \
     \
     sudo \
     less \
@@ -70,8 +70,8 @@ RUN curl https://raw.githubusercontent.com/ostreedev/ostree/v2023.6/src/boot/gru
     chmod +x /etc/grub.d/15_ostree
 
 # Mount disk locations
-RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         ext4 rw,relatime                                                                                           0 1" >> /etc/fstab && \
-    echo "LABEL=${OSTREE_SYS_HOME_LABEL} /home     ext4 rw,relatime                                                                                           0 2" >> /etc/fstab && \
+RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime                                                                                           0 1" >> /etc/fstab && \
+    echo "LABEL=${OSTREE_SYS_HOME_LABEL} /home     xfs  rw,relatime                                                                                           0 2" >> /etc/fstab && \
     echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 ## |
