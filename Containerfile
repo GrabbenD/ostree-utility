@@ -8,19 +8,19 @@ ARG OSTREE_SYS_ROOT_LABEL
 ARG OSTREE_SYS_HOME_LABEL
 
 # Remove container specific storage optimization in Pacman
-RUN sed -i -e 's|^NoExtract.*||g' /etc/pacman.conf && \
+RUN sed -i -e "s|^NoExtract.*||g" /etc/pacman.conf && \
     pacman --noconfirm -Syu
 
 # Clock
 RUN ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
 
 # Language
-RUN echo 'LANG=en_US.UTF-8' | tee /etc/locale.conf && \
-    echo 'en_US.UTF-8 UTF-8' | tee /etc/locale.gen && \
+RUN echo "LANG=en_US.UTF-8" | tee /etc/locale.conf && \
+    echo "en_US.UTF-8 UTF-8" | tee /etc/locale.gen && \
     locale-gen
 
 # Peripherals
-RUN echo 'KEYMAP=sv-latin1' | tee /etc/vconsole.conf
+RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
 
 # Networking
 RUN pacman --noconfirm -S networkmanager && \
@@ -87,9 +87,10 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime             
 
 # https://ostree.readthedocs.io/en/stable/manual/adapting-existing/
 
+# Move Pacman database
 RUN sed -i \
-    -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' \
-    -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' \
+    -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
+    -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
     /etc/pacman.conf && \
     mv /var/lib/pacman /usr/lib/
 
@@ -136,7 +137,7 @@ RUN rm -r /var/*
 RUN mkdir /sysroot && \
     ln -s sysroot/ostree /ostree
 
-# Skip 'Device or resource busy' errors
+# Skip "Device or resource busy" errors
 RUN mv /etc /usr/ || :
 
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \

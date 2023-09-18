@@ -7,20 +7,20 @@ set -e
 function ENV_CREATE_OPTS {
     # Do not touch disks in a booted system:
     if [[ ! -d "/ostree" ]]; then
-        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/mnt}                               # Override
-        export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:=/dev/disk/by-id/${OSTREE_DEV_SCSI}} # Required for install
-        export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:=${OSTREE_DEV_DISK}-part1}
-        export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:=${OSTREE_DEV_DISK}-part2}
-        export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:=${OSTREE_DEV_DISK}-part3}
+        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/mnt"}                               # Override
+        export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"} # Required for install
+        export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
+        export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
+        export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
     fi
 
     # Configurable:
-    export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/}
-    export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:=/tmp/rootfs}
+    export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
+    export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:="/tmp/rootfs"}
 
-    export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:=SYS_BOOT}
-    export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:=SYS_ROOT}
-    export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:=SYS_HOME}
+    export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
+    export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
+    export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
 
     # Dynamic:
     export SCRIPT_DIRECTORY=$(dirname "$0")
@@ -74,7 +74,7 @@ function OSTREE_CREATE_REPO {
     ostree admin init-fs --sysroot=${OSTREE_SYS_ROOT} --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot=${OSTREE_SYS_ROOT} archlinux
     ostree init --repo=${OSTREE_SYS_ROOT}/ostree/repo --mode=bare
-    ostree config --repo=${OSTREE_SYS_ROOT}/ostree/repo set sysroot.bootprefix 'true'
+    ostree config --repo=${OSTREE_SYS_ROOT}/ostree/repo set sysroot.bootprefix "true"
 }
 
 # [OSTREE]: CONTAINER
@@ -85,7 +85,7 @@ function OSTREE_CREATE_IMAGE {
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
         export TMPDIR="/tmp/podman"
-        PODMAN_ARGS=(
+        export PODMAN_ARGS=(
             --root ${TMPDIR}/storage
             --tmpdir ${TMPDIR}/tmp
         )
@@ -107,7 +107,7 @@ function OSTREE_CREATE_IMAGE {
 
 # [OSTREE]: COMMIT
 function OSTREE_DEPLOY_IMAGE {
-    # Update repository and boot entries in GRUB
+    # Update repository and boot entries in GRUB2
     #ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=tar=${OSTREE_SYS_BUILD}.tar --tar-autocreate-parents
     ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=dir=${OSTREE_SYS_BUILD}
     ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --no-merge --retain archlinux/latest
