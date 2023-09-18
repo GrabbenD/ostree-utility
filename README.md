@@ -45,6 +45,8 @@ This serves to demonstrates how to:
    $ chmod +x ostree.sh
    $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
    ```
+
+   Default login is: `root` / `ostree`
    
 5. **Upgrade existing installation:**
    

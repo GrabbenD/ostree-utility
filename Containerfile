@@ -32,7 +32,7 @@ RUN pacman --noconfirm -S openssh && \
     systemctl enable sshd && \
     echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
-# Root password
+# Root password (todo move to secret)
 RUN echo "root:ostree" | chpasswd
 
 ## |
