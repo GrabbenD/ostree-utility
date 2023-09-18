@@ -27,7 +27,7 @@ This serves to demonstrate how to:
 3. **Find `ID-LINK` for installation device where OSTree image will be deployed:**
    
    ```console
-   lsblk -o NAME,TYPE,FSTYPE,MODEL,ID-LINK,SIZE,MOUNTPOINTS,LABEL
+   $ lsblk -o NAME,TYPE,FSTYPE,MODEL,ID-LINK,SIZE,MOUNTPOINTS,LABEL
    NAME   TYPE FSTYPE MODEL        ID-LINK                                        SIZE MOUNTPOINTS LABEL
    sdb    disk        Virtual Disk scsi-360022480c22be84f8a61b39bbaed612f         300G
    ├─sdb1 part vfat                scsi-360022480c22be84f8a61b39bbaed612f-part1   256M             SYS_BOOT
