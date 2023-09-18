@@ -63,7 +63,7 @@ function DISK_CREATE_MOUNTS {
 function OSTREE_CREATE_REPO {
     ENV_DEPS_CREATE ostree wget which 
     ostree admin init-fs --sysroot=${OSTREE_SYS_ROOT} --modern ${OSTREE_SYS_ROOT}
-    ostree admin os-init --sysroot=${OSTREE_SYS_ROOT} archlinux
+    ostree admin stateroot-init --sysroot=${OSTREE_SYS_ROOT} archlinux
     ostree init --repo=${OSTREE_SYS_ROOT}/ostree/repo --mode=bare
     ostree config --repo=${OSTREE_SYS_ROOT}/ostree/repo set sysroot.bootprefix 'true'
 }
