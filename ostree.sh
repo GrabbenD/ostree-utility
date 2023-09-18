@@ -35,7 +35,7 @@ function ENV_CREATE_DEPS {
     fi
 }
 
-# [ENVIRONMENT]: CURRENT INSTALL
+# [ENVIRONMENT]: OSTREE
 function ENV_VERIFY_LOCAL {
     if [[ ! -d "/ostree" ]]; then
         exit 0
@@ -113,6 +113,11 @@ function OSTREE_DEPLOY_IMAGE {
     ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --no-merge --retain archlinux/latest
 }
 
+# [OSTREE]: UNDO
+function OSTREE_REVERT_IMAGE {
+    ostree admin undeploy --sysroot=${OSTREE_SYS_ROOT} 0
+}
+
 # [BOOTLOADER]: FIRST BOOT
 # | Todo: improve grub-mkconfig
 function BOOTLOADER_CREATE {
@@ -154,7 +159,14 @@ case ${1:-} in
         OSTREE_DEPLOY_IMAGE
         ;;
 
+    "revert")
+        ENV_VERIFY_LOCAL
+        ENV_CREATE_OPTS
+        
+        OSTREE_REVERT_IMAGE
+        ;;
+
     *)
-        echo "Usage: ostree.sh [install|upgrade]"
+        echo "Usage: ostree.sh [install|upgrade|revert]"
         ;;
 esac
