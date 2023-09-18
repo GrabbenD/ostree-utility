@@ -1,23 +1,23 @@
 # OSTree container in Arch Linux using Podman
 
-Massive shoutout to @M1cha for making this possible (https://github.com/M1cha/archlinux-ostree)
+Massive shoutout to [M1cha](https://github.com/M1cha/) for making this possible ([M1cha/archlinux-ostree](https://github.com/M1cha/archlinux-ostree)).
 
 # Overview
 
-This serves to demonstrates how to:
-1. Build a immutable OSTree image using rootfs from a declerative Podman Containerfile
-2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system
-3. Generate OSTree repository in a empty filesystem
-4. Integrate OSTree with GRUB2 bootloader
-5. Upgrade existing installation with a rootfs image
+This serves to demonstrate how to:
+1. Build an immutable OSTree image using rootfs from a declerative Podman Containerfile.
+2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system.
+3. Generate OSTree repository in a empty filesystem.
+4. Integrate OSTree with GRUB2 bootloader.
+5. Upgrade an existing installation with a rootfs image.
 
 # Usage
 
-1. **Boot into a Arch Linux system:**
+1. **Boot into any Arch Linux system:**
    
-   For instance, using a live CD/USB ISO image from: https://archlinux.org/download/
+   For instance, using a live CD/USB ISO image from: [Arch Linux Downloads](https://archlinux.org/download).
    
-2. **Clone this repository to obtain install script:**
+2. **Clone this repository:**
    
    ```console
    $ sudo pacman -Sy git
@@ -35,20 +35,24 @@ This serves to demonstrates how to:
    └─sdb3 part xfs                 scsi-360022480c22be84f8a61b39bbaed612f-part3   275G             SYS_ROOT
    ```
    
-4. **Perform clean installation:**
+4. **Perform a clean setup:**
    
-   **⚠️ WARNING ⚠️**
+   1. Install OSTree with the provided script.
+      
+      **⚠️ WARNING ⚠️**
+      
+      `ostree.sh` is destrucive and has no promps while partitioning the specified disk, **proceed with caution**:
+      
+      ```console
+      $ chmod +x ostree.sh
+      $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
+      ```
+      
+   2. Update your BIOS boot order to access the installation.
+      
+      Default login is: `root` / `ostree`
    
-   `ostree.sh` is destrucive and has no promps while partitioning, proceed with caution:
-   
-   ```console
-   $ chmod +x ostree.sh
-   $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
-   ```
-
-   Default login is: `root` / `ostree`
-   
-5. **Upgrade existing installation:**
+5. **Upgrade an existing installation:**
    
    While booted into a OSTree system, use:
    
