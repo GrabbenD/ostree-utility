@@ -75,6 +75,13 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime             
     echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 ## |
+## | CUSTOMIZE
+## |
+
+# Add your own topping as late as possible to retain more layer caching
+#RUN pacman --noconfirm -S htop
+
+## |
 ## | OSTREEIFY
 ## |
 
