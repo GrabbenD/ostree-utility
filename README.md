@@ -59,3 +59,9 @@ This serves to demonstrate how to:
    ```console
    $ sudo ./ostree.sh upgrade
    ```
+   
+6. **Revert to previous commit:**
+   
+   ```console
+   $ sudo ./ostree.sh revert
+   ```
