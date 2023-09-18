@@ -4,39 +4,48 @@ set -u
 set -e
 
 # [ENVIRONMENT]: OPTIONS
-function ENV_OPTS_CREATE {
-    # Required
-    # - OSTREE_DEV_SCSI (for install)
+function ENV_CREATE_OPTS {
+    # Do not touch disks in a booted system:
+    if [[ ! -d "/ostree" ]]; then
+        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/mnt}                               # Override
+        export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:=/dev/disk/by-id/${OSTREE_DEV_SCSI}} # Required for install
+        export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:=${OSTREE_DEV_DISK}-part1}
+        export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:=${OSTREE_DEV_DISK}-part2}
+        export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:=${OSTREE_DEV_DISK}-part3}
+    fi
 
-    # Configurable
-    export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:=/dev/disk/by-id/${OSTREE_DEV_SCSI}}
-    export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:=${OSTREE_DEV_DISK}-part1}
-    export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:=${OSTREE_DEV_DISK}-part2}
-    export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:=${OSTREE_DEV_DISK}-part3}
+    # Configurable:
+    export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/}
+    export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:=/tmp/rootfs}
 
     export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:=SYS_BOOT}
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:=SYS_ROOT}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:=SYS_HOME}
 
-    export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:=/mnt}
-    export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:=/tmp/rootfs}
-
+    # Dynamic:
     export SCRIPT_DIRECTORY=$(dirname "$0")
 }
 
 # [ENVIRONMENT]: DEPENDENCIES
 # | Todo: add persistent Pacman cache
-function ENV_DEPS_CREATE {
+function ENV_CREATE_DEPS {
     # Skip in OSTree as filesystem is read-only
     if ! grep -q ostree /proc/cmdline; then
         pacman --noconfirm --needed -S $@
     fi
 }
 
+# [ENVIRONMENT]: CURRENT INSTALL
+function ENV_VERIFY_LOCAL {
+    if [[ ! -d "/ostree" ]]; then
+        exit 0
+    fi
+}
+
 # [DISK]: PARTITIONING (GPT+UEFI)
 function DISK_CREATE_LAYOUT {
-    ENV_DEPS_CREATE parted
-    umount --lazy --recursive ${OSTREE_SYS_ROOT} || :
+    ENV_CREATE_DEPS parted
+    umount --lazy --recursive ${OSTREE_DEV_DISK}-part* ${OSTREE_SYS_ROOT} || :
     parted -a optimal -s ${OSTREE_DEV_DISK} -- \
         mklabel gpt \
         mkpart ${OSTREE_SYS_BOOT_LABEL} fat32 0% 257MiB \
@@ -47,7 +56,7 @@ function DISK_CREATE_LAYOUT {
 
 # [DISK]: FILESYSTEM (ESP+XFS)
 function DISK_CREATE_FORMAT {
-    ENV_DEPS_CREATE dosfstools xfsprogs
+    ENV_CREATE_DEPS dosfstools xfsprogs
     mkfs.vfat -n ${OSTREE_SYS_BOOT_LABEL} -F 32 ${OSTREE_DEV_BOOT}
     mkfs.xfs -L ${OSTREE_SYS_ROOT_LABEL} -f ${OSTREE_DEV_ROOT} -n ftype=1
     mkfs.xfs -L ${OSTREE_SYS_HOME_LABEL} -f ${OSTREE_DEV_HOME} -n ftype=1
@@ -61,7 +70,7 @@ function DISK_CREATE_MOUNTS {
 
 # [OSTREE]: INITIALIZATION
 function OSTREE_CREATE_REPO {
-    ENV_DEPS_CREATE ostree wget which 
+    ENV_CREATE_DEPS ostree wget which 
     ostree admin init-fs --sysroot=${OSTREE_SYS_ROOT} --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot=${OSTREE_SYS_ROOT} archlinux
     ostree init --repo=${OSTREE_SYS_ROOT}/ostree/repo --mode=bare
@@ -74,7 +83,7 @@ function OSTREE_CREATE_REPO {
 function OSTREE_CREATE_IMAGE {
     # Add support for overlay storage driver in LiveCD
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
-        ENV_DEPS_CREATE fuse-overlayfs
+        ENV_CREATE_DEPS fuse-overlayfs
         export TMPDIR="/tmp/podman"
         PODMAN_ARGS=(
             --root ${TMPDIR}/storage
@@ -83,7 +92,7 @@ function OSTREE_CREATE_IMAGE {
     fi
 
     # Create rootfs directory (workaround: `podman build --output local` doesn't preserve ownership)
-    ENV_DEPS_CREATE podman
+    ENV_CREATE_DEPS podman
     podman ${PODMAN_ARGS[@]} build \
         -f ${SCRIPT_DIRECTORY}/Containerfile \
         -t rootfs \
@@ -124,7 +133,7 @@ function BOOTLOADER_CREATE {
 # [CLI]: TASKS FINECONTROL
 case ${1:-} in
     "install")
-        ENV_OPTS_CREATE
+        ENV_CREATE_OPTS
 
         DISK_CREATE_LAYOUT
         DISK_CREATE_FORMAT
@@ -138,13 +147,8 @@ case ${1:-} in
         ;;
 
     "upgrade")
-        if [[ ! -d "/ostree" ]]; then
-            exit 0
-        fi
-
-        export OSTREE_DEV_SCSI=
-        export OSTREE_SYS_ROOT=/
-        ENV_OPTS_CREATE
+        ENV_VERIFY_LOCAL
+        ENV_CREATE_OPTS
 
         OSTREE_CREATE_IMAGE
         OSTREE_DEPLOY_IMAGE
