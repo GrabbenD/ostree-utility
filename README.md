@@ -37,7 +37,7 @@ This serves to demonstrate how to:
    
 4. **Perform a clean setup:**
    
-   1. Install OSTree with the provided script.
+   1. Perform a takeover installation with provided script:
       
       **⚠️ WARNING ⚠️**
       
