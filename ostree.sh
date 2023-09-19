@@ -78,6 +78,7 @@ function OSTREE_CREATE_REPO {
 }
 
 # [OSTREE]: CONTAINER
+# | Todo: remove `rm -rf /etc` once Podman inconsistency is fixed (https://github.com/containers/podman/issues/20001#issuecomment-1725003336)
 # | Todo: use tar format (`podman build -f Containerfile -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 function OSTREE_CREATE_IMAGE {
     # Add support for overlay storage driver in LiveCD
@@ -101,6 +102,7 @@ function OSTREE_CREATE_IMAGE {
     rm -rf ${OSTREE_SYS_BUILD}
     mkdir ${OSTREE_SYS_BUILD}
     podman ${PODMAN_ARGS[@]} export $(podman ${PODMAN_ARGS[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
+    rm -rf ${OSTREE_SYS_BUILD}/etc
 }
 
 # [OSTREE]: COMMIT

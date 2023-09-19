@@ -140,4 +140,4 @@ RUN --network=none \
     mkdir /sysroot && \
     ln -s sysroot/ostree /ostree && \
     \
-    mv /etc /usr/
+    mv /etc /usr/ || :
