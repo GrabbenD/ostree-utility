@@ -1,6 +1,6 @@
-# |
-# | BASE INSTALLATION
-# |
+## |
+## | BASE INSTALLATION
+## |
 
 FROM archlinux:base AS rootfs
 ARG OSTREE_SYS_BOOT_LABEL
@@ -81,14 +81,14 @@ RUN echo "root:ostree" | chpasswd
 ## | OSTREEIFY
 ## |
 
-# https://ostree.readthedocs.io/en/stable/manual/adapting-existing/
-
 # Move Pacman database
 RUN sed -i \
     -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
     -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
     /etc/pacman.conf && \
     mv /var/lib/pacman /usr/lib/
+
+# https://ostree.readthedocs.io/en/stable/manual/adapting-existing/
 
 RUN mv /home /var/ && \
 	ln -s var/home /home
