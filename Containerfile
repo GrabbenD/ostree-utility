@@ -88,29 +88,36 @@ RUN sed -i \
     /etc/pacman.conf && \
     mv /var/lib/pacman /usr/lib/
 
+# Prepare microcode and initramfs
+RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
+    echo $moduledir && \
+    cat \
+        /boot/*-ucode.img \
+        /boot/initramfs-linux-fallback.img \
+        > $moduledir/initramfs.img
+
 # https://ostree.readthedocs.io/en/stable/manual/adapting-existing/
-
-RUN mv /home /var/ && \
-    ln -s var/home /home
-
-RUN mv /mnt /var/ && \
-    ln -s var/mnt /mnt
-
 # This is recommended by ostree but I don't see a good reason for it.
 # rmdir "$rootfs/var/opt"
 # mv "$rootfs/opt" "$rootfs/var/"
 # ln -s var/opt "$rootfs/opt"
-
-RUN mv /root /var/roothome && \
-    ln -s var/roothome /root
-
-RUN rm -r /usr/local && \
-    ln -s ../var/usrlocal /usr/local
-
-RUN mv /srv /var/srv && \
-    ln -s var/srv /srv
-
-RUN echo "d /var/log/journal 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+RUN --network=none \
+    mv /home /var/ && \
+    ln -s var/home /home && \
+    \
+    mv /mnt /var/ && \
+    ln -s var/mnt /mnt && \
+    \
+    mv /root /var/roothome && \
+    ln -s var/roothome /root && \
+    \
+    rm -r /usr/local && \
+    ln -s ../var/usrlocal /usr/local && \
+    \
+    mv /srv /var/srv && \
+    ln -s var/srv /srv && \
+    \
+    echo "d /var/log/journal 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo "L /var/home - - - - ../sysroot/home" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo "#d /var/opt 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo "d /var/srv 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
@@ -126,19 +133,11 @@ RUN echo "d /var/log/journal 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-i
     echo "d /var/usrlocal/share 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo "d /var/usrlocal/src 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo "d /var/mnt 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-    echo "d /run/media 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf
-
-RUN rm -r /var/*
-
-RUN mkdir /sysroot && \
-    ln -s sysroot/ostree /ostree
-
-# Skip "Device or resource busy" errors
-RUN mv /etc /usr/ || :
-
-RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
-    echo $moduledir && \
-    cat \
-        /boot/*-ucode.img \
-        /boot/initramfs-linux-fallback.img \
-        > $moduledir/initramfs.img
+    echo "d /run/media 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+    \
+    rm -r /var/* && \
+    \
+    mkdir /sysroot && \
+    ln -s sysroot/ostree /ostree && \
+    \
+    mv /etc /usr/
