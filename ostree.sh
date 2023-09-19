@@ -70,7 +70,7 @@ function DISK_CREATE_MOUNTS {
 
 # [OSTREE]: INITIALIZATION
 function OSTREE_CREATE_REPO {
-    ENV_CREATE_DEPS ostree wget which 
+    ENV_CREATE_DEPS ostree wget which
     ostree admin init-fs --sysroot=${OSTREE_SYS_ROOT} --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot=${OSTREE_SYS_ROOT} archlinux
     ostree init --repo=${OSTREE_SYS_ROOT}/ostree/repo --mode=bare
@@ -122,13 +122,13 @@ function OSTREE_REVERT_IMAGE {
 # | Todo: improve grub-mkconfig
 function BOOTLOADER_CREATE {
     grub-install --target=x86_64-efi --efi-directory=${OSTREE_SYS_ROOT}/boot/efi --removable --boot-directory=${OSTREE_SYS_ROOT}/boot/efi/EFI --bootloader-id=archlinux ${OSTREE_DEV_BOOT}
-    
+
     export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/archlinux/deploy/* | head -n 1)
-    
+
     rm -rfv ${OSTREE_SYS_PATH}/boot/*
     mount --mkdir --rbind ${OSTREE_SYS_ROOT}/boot ${OSTREE_SYS_PATH}/boot
     mount --mkdir --rbind ${OSTREE_SYS_ROOT}/ostree ${OSTREE_SYS_PATH}/sysroot/ostree
-    
+
     for i in /dev /proc /sys; do mount -o bind $i ${OSTREE_SYS_PATH}${i}; done
     chroot ${OSTREE_SYS_PATH} /bin/bash -c "grub-mkconfig -o /boot/efi/EFI/grub/grub.cfg"
 
@@ -162,7 +162,7 @@ case ${1:-} in
     "revert")
         ENV_VERIFY_LOCAL
         ENV_CREATE_OPTS
-        
+
         OSTREE_REVERT_IMAGE
         ;;
 

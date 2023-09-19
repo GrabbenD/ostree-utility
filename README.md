@@ -14,18 +14,18 @@ This serves to demonstrate how to:
 # Usage
 
 1. **Boot into any Arch Linux system:**
-   
+
    For instance, using a live CD/USB ISO image from: [Arch Linux Downloads](https://archlinux.org/download).
-   
+
 2. **Clone this repository:**
-   
+
    ```console
    $ sudo pacman -Sy git
    $ git https://github.com/GrabbenD/ostree-demo.git && cd ostree-demo
    ```
-   
+
 3. **Find `ID-LINK` for installation device where OSTree image will be deployed:**
-   
+
    ```console
    $ lsblk -o NAME,TYPE,FSTYPE,MODEL,ID-LINK,SIZE,MOUNTPOINTS,LABEL
    NAME   TYPE FSTYPE MODEL        ID-LINK                                        SIZE MOUNTPOINTS LABEL
@@ -34,34 +34,34 @@ This serves to demonstrate how to:
    ├─sdb2 part xfs                 scsi-360022480c22be84f8a61b39bbaed612f-part2  24.7G             SYS_HOME
    └─sdb3 part xfs                 scsi-360022480c22be84f8a61b39bbaed612f-part3   275G             SYS_ROOT
    ```
-   
+
 4. **Perform a clean setup:**
-   
+
    1. Perform a takeover installation with provided script:
-      
+
       **⚠️ WARNING ⚠️**
-      
+
       `ostree.sh` is destrucive and has no promps while partitioning the specified disk, **proceed with caution**:
-      
+
       ```console
       $ chmod +x ostree.sh
       $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
       ```
-      
+
    2. Update your BIOS boot order to access the installation.
-      
+
       Default login is: `root` / `ostree`
-   
+
 5. **Upgrade an existing installation:**
-   
+
    While booted into a OSTree system, use:
-   
+
    ```console
    $ sudo ./ostree.sh upgrade
    ```
-   
+
 6. **Revert to previous commit:**
-   
+
    ```console
    $ sudo ./ostree.sh revert
    ```
