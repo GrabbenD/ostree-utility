@@ -40,13 +40,10 @@ RUN pacman --noconfirm -S \
 	dosfstools \
     xfsprogs \
     \
-    sudo \
-    less \
-    \
+    podman \
     ostree \
     grub \
-    which \
-    podman
+    which
 
 # Native Overlay Diff for optimal Podman performance
 RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
