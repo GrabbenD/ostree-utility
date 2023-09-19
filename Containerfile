@@ -11,6 +11,12 @@ ARG OSTREE_SYS_HOME_LABEL
 RUN sed -i -e "s|^NoExtract.*||g" /etc/pacman.conf && \
     pacman --noconfirm -Syu
 
+# Clock
+RUN ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
+
+# Keymap hook
+RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
+
 # Language
 RUN echo "LANG=en_US.UTF-8" | tee /etc/locale.conf && \
     echo "en_US.UTF-8 UTF-8" | tee /etc/locale.gen && \
@@ -62,12 +68,6 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime             
 ## |
 
 # Add your own topping as late as possible to retain more layer caching
-
-# Clock
-RUN ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
-
-# Peripherals
-RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
 
 # SSHD
 RUN pacman --noconfirm -S openssh && \
