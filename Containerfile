@@ -1,5 +1,5 @@
 # |
-# | BASE CONFIGURATION
+# | BASE INSTALLATION
 # |
 
 FROM archlinux:base AS rootfs
@@ -11,32 +11,18 @@ ARG OSTREE_SYS_HOME_LABEL
 RUN sed -i -e "s|^NoExtract.*||g" /etc/pacman.conf && \
     pacman --noconfirm -Syu
 
-# Clock
-RUN ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
-
 # Language
 RUN echo "LANG=en_US.UTF-8" | tee /etc/locale.conf && \
     echo "en_US.UTF-8 UTF-8" | tee /etc/locale.gen && \
     locale-gen
-
-# Peripherals
-RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
 
 # Networking
 RUN pacman --noconfirm -S networkmanager && \
     systemctl enable NetworkManager.service && \
     systemctl mask systemd-networkd-wait-online.service
 
-# SSHD
-RUN pacman --noconfirm -S openssh && \
-    systemctl enable sshd && \
-    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
-
-# Root password (todo move to secret)
-RUN echo "root:ostree" | chpasswd
-
 ## |
-## | OSTREE DEPENDENCIES
+## | OSTREE INSTALLATION
 ## |
 
 # Prepre OSTree integration
@@ -75,11 +61,24 @@ RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime             
     echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
 ## |
-## | CUSTOMIZE
+## | CUSTOMIZE INSTALLATION
 ## |
 
 # Add your own topping as late as possible to retain more layer caching
-#RUN pacman --noconfirm -S htop
+
+# Clock
+RUN ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
+
+# Peripherals
+RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
+
+# SSHD
+RUN pacman --noconfirm -S openssh && \
+    systemctl enable sshd && \
+    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+# Root password (todo move to secret)
+RUN echo "root:ostree" | chpasswd
 
 ## |
 ## | OSTREEIFY
