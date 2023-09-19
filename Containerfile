@@ -37,7 +37,7 @@ RUN pacman --noconfirm -S \
     linux-firmware \
     amd-ucode \
     \
-	dosfstools \
+    dosfstools \
     xfsprogs \
     \
     podman \
@@ -91,10 +91,10 @@ RUN sed -i \
 # https://ostree.readthedocs.io/en/stable/manual/adapting-existing/
 
 RUN mv /home /var/ && \
-	ln -s var/home /home
+    ln -s var/home /home
 
 RUN mv /mnt /var/ && \
-	ln -s var/mnt /mnt
+    ln -s var/mnt /mnt
 
 # This is recommended by ostree but I don't see a good reason for it.
 # rmdir "$rootfs/var/opt"
@@ -102,13 +102,13 @@ RUN mv /mnt /var/ && \
 # ln -s var/opt "$rootfs/opt"
 
 RUN mv /root /var/roothome && \
-	ln -s var/roothome /root
+    ln -s var/roothome /root
 
 RUN rm -r /usr/local && \
-	ln -s ../var/usrlocal /usr/local
+    ln -s ../var/usrlocal /usr/local
 
 RUN mv /srv /var/srv && \
-	ln -s var/srv /srv
+    ln -s var/srv /srv
 
 RUN echo "d /var/log/journal 0755 root root -" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
     echo "L /var/home - - - - ../sysroot/home" >> /usr/lib/tmpfiles.d/ostree-0-integration.conf && \
@@ -138,7 +138,7 @@ RUN mv /etc /usr/ || :
 
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
     echo $moduledir && \
-	cat \
-		/boot/*-ucode.img \
-		/boot/initramfs-linux-fallback.img \
-		> $moduledir/initramfs.img
+    cat \
+        /boot/*-ucode.img \
+        /boot/initramfs-linux-fallback.img \
+        > $moduledir/initramfs.img
