@@ -60,6 +60,8 @@ This serves to demonstrate how to:
    $ sudo ./ostree.sh upgrade
    ```
 
+   💡 Use `--merge` option to preserve contents of: `/etc`
+
 6. **Revert to previous commit:**
 
    ```console

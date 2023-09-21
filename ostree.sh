@@ -17,10 +17,10 @@ function ENV_CREATE_OPTS {
     # Configurable:
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
     export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:="/tmp/rootfs"}
-
     export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
+    export OSTREE_OPT_NOMERGE=(${OSTREE_OPT_NOMERGE="--no-merge"})
 
     # Dynamic:
     export SCRIPT_DIRECTORY=$(dirname "$0")
@@ -110,7 +110,7 @@ function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
     #ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=tar=${OSTREE_SYS_BUILD}.tar --tar-autocreate-parents
     ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=dir=${OSTREE_SYS_BUILD}
-    ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --no-merge --retain archlinux/latest
+    ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --retain archlinux/latest ${OSTREE_OPT_NOMERGE[@]}
 }
 
 # [OSTREE]: UNDO
@@ -144,6 +144,11 @@ while [[ $# -gt 1 ]]; do
         -d|--dev)
             export OSTREE_DEV_SCSI=${3}
             shift 2 # Get value
+        ;;
+
+        -m|--merge)
+            export OSTREE_OPT_NOMERGE=""
+            shift # Finish
         ;;
 
         *)
@@ -185,6 +190,6 @@ case ${argument} in
     ;;
 
     *)
-        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev]"
+        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [--merge]"
     ;;
 esac
