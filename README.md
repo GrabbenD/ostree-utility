@@ -99,6 +99,8 @@ My vision is to build a secure and minimal base system which is resilent against
 
    💡 Default login is: `root` / `ostree`
 
+   💡 Use a different Containerfile with `--file` option
+
 5. **Upgrade an existing installation:**
 
    While booted into a OSTree system, use:

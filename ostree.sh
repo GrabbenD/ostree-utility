@@ -21,9 +21,7 @@ function ENV_CREATE_OPTS {
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
     export OSTREE_OPT_NOMERGE=(${OSTREE_OPT_NOMERGE="--no-merge"})
-
-    # Dynamic:
-    export SCRIPT_DIRECTORY=$(dirname "$0")
+    export PODMAN_OPT_FILE=${PODMAN_OPT_FILE:="$(dirname $0)/Containerfile"}
 }
 
 # [ENVIRONMENT]: INSTALL DEPENDENCIES
@@ -79,7 +77,7 @@ function OSTREE_CREATE_REPO {
 
 # [OSTREE]: CONTAINER
 # | Todo: remove `rm -rf /etc` once Podman inconsistency is fixed (https://github.com/containers/podman/issues/20001#issuecomment-1725003336)
-# | Todo: use tar format (`podman build -f Containerfile -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
+# | Todo: use tar format (`podman build -f ${PODMAN_OPT_FILE} -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 function OSTREE_CREATE_IMAGE {
     # Add support for overlay storage driver in LiveCD
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
@@ -94,7 +92,7 @@ function OSTREE_CREATE_IMAGE {
     # Create rootfs directory (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_CREATE_DEPS podman
     podman ${PODMAN_ARGS[@]} build \
-        -f ${SCRIPT_DIRECTORY}/Containerfile \
+        -f ${PODMAN_OPT_FILE} \
         -t rootfs \
         --build-arg OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL} \
         --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
@@ -146,9 +144,15 @@ while [[ $# -gt 1 ]]; do
             shift 2 # Get value
         ;;
 
+        -f|--file)
+            echo using::: ${3}
+            export PODMAN_OPT_FILE=${3}
+            shift 2 # Get value
+        ;;
+
         -m|--merge)
             export OSTREE_OPT_NOMERGE=""
-            shift # Finish
+            shift 1 # Finish
         ;;
 
         *)
@@ -190,6 +194,6 @@ case ${argument} in
     ;;
 
     *)
-        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [-m, --merge]"
+        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [-f, --file] [-m, --merge]"
     ;;
 esac
