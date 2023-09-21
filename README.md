@@ -36,7 +36,7 @@ My vision is to build a secure and minimal base system which is resilent against
 - Read-only system files.
 - Restore points.
 - Automatic deployment, installation & configuration.
-- Using only required components like kernel/firmware/driver, microcode and GGC.
+- Using only required components like kernel/firmware/driver, microcode and GGC in the base.
 - Doing the rest in temporary namespaces like Podman.
 
 ### Goal
@@ -47,7 +47,7 @@ My vision is to build a secure and minimal base system which is resilent against
 - Distribution agnostic toolset.
 - Configuration management.
 - Rootfs creation via containers.
-- Each deployment does a factory reset of system files (unless overridden).
+- Each deployment does a factory reset of system files _(unless overridden)_.
 
 ### Similar projects
 
@@ -95,7 +95,7 @@ My vision is to build a secure and minimal base system which is resilent against
    $ sudo ./ostree.sh install --dev scsi-360022480c22be84f8a61b39bbaed612f
    ```
 
-   💡 Update your BIOS boot order to access the installation.
+   ⚙️ Update your BIOS boot order to access the installation.
 
    💡 Default login is: `root` / `ostree`
 
@@ -110,6 +110,8 @@ My vision is to build a secure and minimal base system which is resilent against
    💡 Use `--merge` option to preserve contents of `/etc`
 
 6. **Revert to previous commit:**
+
+   To revert the latest _(0)_ deployment, boot into the previous configuration _(1)_ and execute:
 
    ```console
    $ sudo ./ostree.sh revert
