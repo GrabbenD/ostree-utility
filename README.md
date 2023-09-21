@@ -30,14 +30,24 @@ This serves to demonstrate how to:
 
 ### Motivation
 
-I needed a approach which provides:
-- Reproducible deployments
-- Versioned rollbacks
-- Immutable filesystem
-- Distribution agnostic toolset
-- Configuration management
-- Rootfs creation via containers
-- Each deployment does a factory reset of system files (unless overridden)
+My vision is to build a secure and minimal base system which is resilent against breakage and provides setup automation to reduce the burden of doing manual tasks. This can be achieved by:
+
+- Git.
+- Read-only system files.
+- Restore points.
+- Automatic deployment, installation & configuration.
+- Using only required components like kernel/firmware/driver, microcode and GGC.
+- Doing the rest in temporary namespaces like Podman.
+
+### Goal
+
+- Reproducible deployments.
+- Versioned rollbacks.
+- Immutable filesystem.
+- Distribution agnostic toolset.
+- Configuration management.
+- Rootfs creation via containers.
+- Each deployment does a factory reset of system files (unless overridden).
 
 ### Similar projects
 
