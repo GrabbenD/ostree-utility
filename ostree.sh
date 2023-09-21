@@ -3,15 +3,15 @@ set -x
 set -u
 set -e
 
-# [ENVIRONMENT]: OPTIONS
+# [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
     # Do not touch disks in a booted system:
     if [[ ! -d "/ostree" ]]; then
-        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/mnt"}                               # Override
-        export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"} # Required for install
+        export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
         export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
         export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
         export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
+        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/mnt"}
     fi
 
     # Configurable:
@@ -26,7 +26,7 @@ function ENV_CREATE_OPTS {
     export SCRIPT_DIRECTORY=$(dirname "$0")
 }
 
-# [ENVIRONMENT]: DEPENDENCIES
+# [ENVIRONMENT]: INSTALL DEPENDENCIES
 # | Todo: add persistent Pacman cache
 function ENV_CREATE_DEPS {
     # Skip in OSTree as filesystem is read-only
@@ -35,7 +35,7 @@ function ENV_CREATE_DEPS {
     fi
 }
 
-# [ENVIRONMENT]: OSTREE
+# [ENVIRONMENT]: OSTREE CHECK
 function ENV_VERIFY_LOCAL {
     if [[ ! -d "/ostree" ]]; then
         exit 1
