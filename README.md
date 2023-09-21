@@ -1,10 +1,10 @@
-# OSTree in Arch Linux using Podman
+## OSTree in Arch Linux using Podman
 
 Massive shoutout to [M1cha](https://github.com/M1cha/) for making this possible ([M1cha/archlinux-ostree](https://github.com/M1cha/archlinux-ostree)).
 
-## Overview
+### Overview
 
-This serves to demonstrate how to:
+This serves to help you to curate your own setup by demonstrating how to:
 1. Build an immutable OSTree image using rootfs from a Podman Containerfile.
 2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system.
 3. Generate OSTree repository in a empty filesystem.
@@ -37,7 +37,7 @@ My vision is to build a secure and minimal base system which is resilent against
 - Restore points.
 - Automatic deployment, installation & configuration.
 - Using only required components like kernel/firmware/driver, microcode and GGC in the base.
-- Doing the rest in temporary namespaces like Podman.
+- Doing the rest in temporary namespaces such as Podman.
 
 ### Goal
 
@@ -60,7 +60,7 @@ My vision is to build a secure and minimal base system which is resilent against
 - [AshOS](https://github.com/ashos/ashos)
 - [LinuxKit](https://github.com/linuxkit/linuxkit)
 
-# Usage
+## Usage
 
 1. **Boot into any Arch Linux system:**
 
@@ -111,7 +111,7 @@ My vision is to build a secure and minimal base system which is resilent against
 
 6. **Revert to previous commit:**
 
-   To revert the latest _(0)_ deployment, boot into the previous configuration _(1)_ and execute:
+   To revert the latest deployment _(0)_, boot into the previous configuration _(1)_ and execute:
 
    ```console
    $ sudo ./ostree.sh revert
