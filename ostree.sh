@@ -145,7 +145,6 @@ while [[ $# -gt 1 ]]; do
         ;;
 
         -f|--file)
-            echo using::: ${3}
             export PODMAN_OPT_FILE=${3}
             shift 2 # Get value
         ;;
