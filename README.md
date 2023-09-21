@@ -1,15 +1,54 @@
-# OSTree container in Arch Linux using Podman
+# OSTree in Arch Linux using Podman
 
 Massive shoutout to [M1cha](https://github.com/M1cha/) for making this possible ([M1cha/archlinux-ostree](https://github.com/M1cha/archlinux-ostree)).
 
-# Overview
+## Overview
 
 This serves to demonstrate how to:
-1. Build an immutable OSTree image using rootfs from a declerative Podman Containerfile.
+1. Build an immutable OSTree image using rootfs from a Podman Containerfile.
 2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system.
 3. Generate OSTree repository in a empty filesystem.
 4. Integrate OSTree with GRUB2 bootloader.
 5. Upgrade an existing installation with a rootfs image.
+
+### Disk structure
+
+```console
+├── boot
+│   └── efi
+│       └── EFI
+└── ostree
+    ├── deploy
+    │   └── archlinux
+    └── repo
+        ├── config
+        ├── extensions
+        ├── objects
+        ├── refs
+        ├── state
+        └── tmp
+```
+
+### Motivation
+
+I needed a approach which provides:
+- Reproducible deployments
+- Versioned rollbacks
+- Immutable filesystem
+- Distribution agnostic toolset
+- Configuration management
+- RootFS build from containers
+
+### Similar projects
+
+- **[Elemental Toolkit](https://github.com/rancher/elemental-toolkit)**
+- **[KairOS](https://github.com/kairos-io/kairos)**
+- **[BootC](https://github.com/containers/bootc)**
+- [NixOS](https://nixos.org)
+- [ABRoot](https://github.com/Vanilla-OS/ABRoot)
+- [Transactional Update + BTRFS snapshots](https://microos.opensuse.org)
+- [AshOS](https://github.com/ashos/ashos)
+- [LinuxKit](https://github.com/linuxkit/linuxkit)
 
 # Usage
 
@@ -47,6 +86,7 @@ This serves to demonstrate how to:
    ```
 
    💡 Update your BIOS boot order to access the installation.
+
    💡 Default login is: `root` / `ostree`
 
 5. **Upgrade an existing installation:**
@@ -57,7 +97,7 @@ This serves to demonstrate how to:
    $ sudo ./ostree.sh upgrade
    ```
 
-   💡 Use `--merge` option to preserve contents of: `/etc`
+   💡 Use `--merge` option to preserve contents of `/etc`
 
 6. **Revert to previous commit:**
 
