@@ -38,7 +38,7 @@ function ENV_CREATE_DEPS {
 # [ENVIRONMENT]: OSTREE
 function ENV_VERIFY_LOCAL {
     if [[ ! -d "/ostree" ]]; then
-        exit 0
+        exit 1
     fi
 }
 
