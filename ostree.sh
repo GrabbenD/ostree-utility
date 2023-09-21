@@ -190,6 +190,6 @@ case ${argument} in
     ;;
 
     *)
-        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [--merge]"
+        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [-m, --merge]"
     ;;
 esac
