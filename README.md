@@ -35,22 +35,19 @@ This serves to demonstrate how to:
    └─sdb3 part xfs                 scsi-360022480c22be84f8a61b39bbaed612f-part3   275G             SYS_ROOT
    ```
 
-4. **Perform a clean setup:**
+4. **Perform a takeover installation:**
 
-   1. Perform a takeover installation with provided script:
+   **⚠️ WARNING ⚠️**
 
-      **⚠️ WARNING ⚠️**
+   `ostree.sh` is destrucive and has no promps while partitioning the specified disk, **proceed with caution**:
 
-      `ostree.sh` is destrucive and has no promps while partitioning the specified disk, **proceed with caution**:
+   ```console
+   $ chmod +x ostree.sh
+   $ sudo ./ostree.sh install --dev scsi-360022480c22be84f8a61b39bbaed612f
+   ```
 
-      ```console
-      $ chmod +x ostree.sh
-      $ sudo ./ostree.sh install --dev scsi-360022480c22be84f8a61b39bbaed612f
-      ```
-
-   2. Update your BIOS boot order to access the installation.
-
-      Default login is: `root` / `ostree`
+   💡 Update your BIOS boot order to access the installation.
+   💡 Default login is: `root` / `ostree`
 
 5. **Upgrade an existing installation:**
 
