@@ -136,8 +136,26 @@ function BOOTLOADER_CREATE {
 }
 
 # [CLI]: TASKS FINECONTROL
-case ${1:-} in
-    "install")
+argument=${1:-}
+
+# Options
+while [[ $# -gt 1 ]]; do
+    case ${2} in
+        -d|--dev)
+            export OSTREE_DEV_SCSI=${3}
+            shift 2 # Get value
+        ;;
+
+        *)
+            echo "Unknown option: ${2}"
+            exit 2
+        ;;
+    esac
+done
+
+# Argument
+case ${argument} in
+    install)
         ENV_CREATE_OPTS
 
         DISK_CREATE_LAYOUT
@@ -149,24 +167,24 @@ case ${1:-} in
         OSTREE_DEPLOY_IMAGE
 
         BOOTLOADER_CREATE
-        ;;
+    ;;
 
-    "upgrade")
+    upgrade)
         ENV_VERIFY_LOCAL
         ENV_CREATE_OPTS
 
         OSTREE_CREATE_IMAGE
         OSTREE_DEPLOY_IMAGE
-        ;;
+    ;;
 
-    "revert")
+    revert)
         ENV_VERIFY_LOCAL
         ENV_CREATE_OPTS
 
         OSTREE_REVERT_IMAGE
-        ;;
+    ;;
 
     *)
-        echo "Usage: ostree.sh [install|upgrade|revert]"
-        ;;
+        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev]"
+    ;;
 esac

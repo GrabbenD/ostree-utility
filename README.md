@@ -45,7 +45,7 @@ This serves to demonstrate how to:
 
       ```console
       $ chmod +x ostree.sh
-      $ sudo OSTREE_DEV_SCSI=scsi-360022480c22be84f8a61b39bbaed612f ./ostree.sh install
+      $ sudo ./ostree.sh install --dev scsi-360022480c22be84f8a61b39bbaed612f
       ```
 
    2. Update your BIOS boot order to access the installation.
