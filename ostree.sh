@@ -5,8 +5,8 @@ set -e
 
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
-    # Do not touch disks in a booted system:
     if [[ ! -d "/ostree" ]]; then
+        # Do not touch disks in a booted system:
         export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
         export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
         export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
@@ -14,7 +14,6 @@ function ENV_CREATE_OPTS {
         export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/mnt"}
     fi
 
-    # Configurable:
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
     export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:="/tmp/rootfs"}
     export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
@@ -22,6 +21,13 @@ function ENV_CREATE_OPTS {
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
     export OSTREE_OPT_NOMERGE=(${OSTREE_OPT_NOMERGE="--no-merge"})
     export PODMAN_OPT_FILE=${PODMAN_OPT_FILE:="$(dirname $0)/Containerfile"}
+
+    if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
+        # Do not modify host's time unless explicitly specified
+        timedatectl set-timezone ${SYSTEM_OPT_TIMEZONE}
+        timedatectl set-ntp true
+    fi
+    export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
 }
 
 # [ENVIRONMENT]: INSTALL DEPENDENCIES
@@ -96,7 +102,9 @@ function OSTREE_CREATE_IMAGE {
         -t rootfs \
         --build-arg OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL} \
         --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
-        --build-arg OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}
+        --build-arg OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL} \
+        --build-arg OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL} \
+        --build-arg SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}
     rm -rf ${OSTREE_SYS_BUILD}
     mkdir ${OSTREE_SYS_BUILD}
     podman ${PODMAN_ARGS[@]} export $(podman ${PODMAN_ARGS[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
@@ -154,6 +162,11 @@ while [[ $# -gt 1 ]]; do
             shift 1 # Finish
         ;;
 
+        -t|--time)
+            export SYSTEM_OPT_TIMEZONE=${3}
+            shift 2 # Get value
+        ;;
+
         *)
             echo "Unknown option: ${2}"
             exit 2
@@ -193,6 +206,6 @@ case ${argument} in
     ;;
 
     *)
-        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [-f, --file] [-m, --merge]"
+        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [-f, --file] [-m, --merge] [-t, --time]"
     ;;
 esac

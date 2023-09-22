@@ -6,13 +6,14 @@ FROM archlinux:base AS rootfs
 ARG OSTREE_SYS_BOOT_LABEL
 ARG OSTREE_SYS_ROOT_LABEL
 ARG OSTREE_SYS_HOME_LABEL
+ARG SYSTEM_OPT_TIMEZONE
 
 # Remove container specific storage optimization in Pacman
 RUN sed -i -e "s|^NoExtract.*||g" /etc/pacman.conf && \
     pacman --noconfirm -Syu
 
 # Clock
-RUN ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
+RUN ln -sf /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
 
 # Keymap hook
 RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
