@@ -20,7 +20,6 @@ function ENV_CREATE_OPTS {
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
     export OSTREE_OPT_NOMERGE=(${OSTREE_OPT_NOMERGE="--no-merge"})
-    export PODMAN_OPT_FILE=${PODMAN_OPT_FILE:="$(dirname $0)/Containerfile"}
 
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
@@ -28,6 +27,7 @@ function ENV_CREATE_OPTS {
         timedatectl set-ntp true
     fi
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
+    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile"}
 }
 
 # [ENVIRONMENT]: INSTALL DEPENDENCIES
@@ -83,13 +83,13 @@ function OSTREE_CREATE_REPO {
 
 # [OSTREE]: CONTAINER
 # | Todo: remove `rm -rf /etc` once Podman inconsistency is fixed (https://github.com/containers/podman/issues/20001#issuecomment-1725003336)
-# | Todo: use tar format (`podman build -f ${PODMAN_OPT_FILE} -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
+# | Todo: use tar format (`podman build -f ${PODMAN_OPT_BUILDFILE} -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 function OSTREE_CREATE_IMAGE {
     # Add support for overlay storage driver in LiveCD
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
         export TMPDIR="/tmp/podman"
-        export PODMAN_ARGS=(
+        export PODMAN_OPT_GLOBAL=(
             --root ${TMPDIR}/storage
             --tmpdir ${TMPDIR}/tmp
         )
@@ -97,8 +97,8 @@ function OSTREE_CREATE_IMAGE {
 
     # Create rootfs directory (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_CREATE_DEPS podman
-    podman ${PODMAN_ARGS[@]} build \
-        -f ${PODMAN_OPT_FILE} \
+    podman ${PODMAN_OPT_GLOBAL[@]} build \
+        -f ${PODMAN_OPT_BUILDFILE} \
         -t rootfs \
         --build-arg OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL} \
         --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
@@ -106,7 +106,7 @@ function OSTREE_CREATE_IMAGE {
         --build-arg SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}
     rm -rf ${OSTREE_SYS_BUILD}
     mkdir ${OSTREE_SYS_BUILD}
-    podman ${PODMAN_ARGS[@]} export $(podman ${PODMAN_ARGS[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
+    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
     rm -rf ${OSTREE_SYS_BUILD}/etc
 }
 
@@ -152,7 +152,7 @@ while [[ $# -gt 1 ]]; do
         ;;
 
         -f|--file)
-            export PODMAN_OPT_FILE=${3}
+            export PODMAN_OPT_BUILDFILE=${3}
             shift 2 # Get value
         ;;
 
