@@ -4,7 +4,7 @@ Massive shoutout to [M1cha](https://github.com/M1cha/) for making this possible 
 
 ### Overview
 
-This serves to help you to curate your own setup by demonstrating how to:
+This is a helper script which aids in curating your own setup by demonstrating how to:
 1. Build an immutable OSTree image using rootfs from a Podman Containerfile.
 2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system.
 3. Generate OSTree repository in a empty filesystem.
