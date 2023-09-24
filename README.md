@@ -28,6 +28,13 @@ This is a helper script which aids in curating your own setup by demonstrating h
         └── tmp
 ```
 
+### Persistence
+
+Everything is deleted between deployments except for:
+- `/etc/*` _(only if `--merge` option is specified)._
+- `/dev/*` _(partitions which OSTree does not reside on are untouched)._
+- `/var/*` _(always)._
+
 ### Motivation
 
 My vision is to build a secure and minimal base system which is resilent against breakage and provides setup automation to reduce the burden of doing manual tasks. This can be achieved by:
@@ -47,7 +54,7 @@ My vision is to build a secure and minimal base system which is resilent against
 - Distribution agnostic toolset.
 - Configuration management.
 - Rootfs creation via containers.
-- Each deployment does a factory reset of system files _(unless overridden)_.
+- Each deployment does a factory reset of system's configuration _(unless overridden)_.
 
 ### Similar projects
 
