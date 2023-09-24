@@ -85,7 +85,7 @@ function OSTREE_CREATE_REPO {
 # | Todo: remove `rm -rf /etc` once Podman inconsistency is fixed (https://github.com/containers/podman/issues/20001#issuecomment-1725003336)
 # | Todo: use tar format (`podman build -f ${PODMAN_OPT_BUILDFILE} -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 function OSTREE_CREATE_IMAGE {
-    # Add support for overlay storage driver in LiveCD
+    # Podman: add support for overlay storage driver in LiveCD
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
         export TMPDIR="/tmp/podman"
@@ -95,7 +95,7 @@ function OSTREE_CREATE_IMAGE {
         )
     fi
 
-    # Create rootfs directory (workaround: `podman build --output local` doesn't preserve ownership)
+    # Podman: create rootfs (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_CREATE_DEPS podman
     podman ${PODMAN_OPT_GLOBAL[@]} build \
         -f ${PODMAN_OPT_BUILDFILE} \
@@ -104,10 +104,71 @@ function OSTREE_CREATE_IMAGE {
         --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
         --build-arg OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL} \
         --build-arg SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}
-    rm -rf ${OSTREE_SYS_BUILD}
-    mkdir ${OSTREE_SYS_BUILD}
-    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
-    rm -rf ${OSTREE_SYS_BUILD}/etc
+
+    # Podman: retrieve rootfs
+    rm -rf ${OSTREE_SYS_BUILD} && \
+        mkdir ${OSTREE_SYS_BUILD} && \
+        podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
+
+    # https://ostree.readthedocs.io/en/stable/manual/adapting-existing/
+
+    # Ostreeify: Move Pacman database
+    sed -i \
+        -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
+        -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
+        ${OSTREE_SYS_BUILD}/etc/pacman.conf && \
+        mv ${OSTREE_SYS_BUILD}/var/lib/pacman ${OSTREE_SYS_BUILD}/usr/lib/
+
+    # Ostreeify: Prepare microcode and initramfs
+    moduledir=$(find ${OSTREE_SYS_BUILD}/usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
+        cat ${OSTREE_SYS_BUILD}/boot/*-ucode.img \
+            ${OSTREE_SYS_BUILD}/boot/initramfs-linux-fallback.img \
+            > ${moduledir}/initramfs.img
+
+    # This is recommended by ostree but I don't see a good reason for it.
+    # rmdir "$rootfs/var/opt"
+    # mv "$rootfs/opt" "$rootfs/var/"
+    # ln -s var/opt "$rootfs/opt"
+    mv ${OSTREE_SYS_BUILD}/home ${OSTREE_SYS_BUILD}/var/ && \
+        ln -s /var/home ${OSTREE_SYS_BUILD}/home
+
+    mv ${OSTREE_SYS_BUILD}/mnt ${OSTREE_SYS_BUILD}/var/ && \
+        ln -s /var/mnt ${OSTREE_SYS_BUILD}/mnt
+
+    mv ${OSTREE_SYS_BUILD}/root ${OSTREE_SYS_BUILD}/var/roothome && \
+        ln -s /var/roothome ${OSTREE_SYS_BUILD}/root
+
+    rm -r ${OSTREE_SYS_BUILD}/usr/local && \
+        ln -s /var/usrlocal ${OSTREE_SYS_BUILD}/usr/local
+
+    mv ${OSTREE_SYS_BUILD}/srv ${OSTREE_SYS_BUILD}/var/srv && \
+        ln -s /var/srv ${OSTREE_SYS_BUILD}/srv
+
+    echo "Creating tmpfiles" && \
+        echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "L /var/home - - - - ../sysroot/home" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "#d /var/opt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/srv 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/roothome 0700 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/bin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/etc 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/games 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/include 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/lib 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/man 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/sbin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
+        echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+
+    rm -r ${OSTREE_SYS_BUILD}/var/*
+
+    mkdir ${OSTREE_SYS_BUILD}/sysroot && \
+        ln -s /sysroot/ostree ${OSTREE_SYS_BUILD}/ostree
+
+    mv ${OSTREE_SYS_BUILD}/etc ${OSTREE_SYS_BUILD}/usr/
 }
 
 # [OSTREE]: COMMIT
