@@ -77,7 +77,7 @@ My vision is to build a secure and minimal base system which is resilent against
 
    ```console
    $ sudo pacman -Sy git
-   $ git https://github.com/GrabbenD/ostree-demo.git && cd ostree-demo
+   $ git https://github.com/GrabbenD/ostree-utility.git && cd ostree-utility
    ```
 
 3. **Find `ID-LINK` for installation device where OSTree image will be deployed:**
