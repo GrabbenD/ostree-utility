@@ -106,68 +106,68 @@ function OSTREE_CREATE_IMAGE {
         --build-arg SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}
 
     # Ostreeify: retrieve rootfs
-    rm -rf ${OSTREE_SYS_BUILD} && \
-        mkdir ${OSTREE_SYS_BUILD} && \
-        podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
+    rm -rf ${OSTREE_SYS_BUILD}
+    mkdir ${OSTREE_SYS_BUILD}
+    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
 
     # Ostreeify: Prepare microcode and initramfs
-    moduledir=$(find ${OSTREE_SYS_BUILD}/usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
-        cat ${OSTREE_SYS_BUILD}/boot/*-ucode.img \
-            ${OSTREE_SYS_BUILD}/boot/initramfs-linux-fallback.img \
-            > ${moduledir}/initramfs.img
+    moduledir=$(find ${OSTREE_SYS_BUILD}/usr/lib/modules -mindepth 1 -maxdepth 1 -type d)
+    cat ${OSTREE_SYS_BUILD}/boot/*-ucode.img \
+        ${OSTREE_SYS_BUILD}/boot/initramfs-linux-fallback.img \
+        > ${moduledir}/initramfs.img
 
     # Ostreeify: Move Pacman database
+    mv ${OSTREE_SYS_BUILD}/var/lib/pacman ${OSTREE_SYS_BUILD}/usr/lib/
     sed -i \
         -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
         -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
-        ${OSTREE_SYS_BUILD}/etc/pacman.conf && \
-        mv ${OSTREE_SYS_BUILD}/var/lib/pacman ${OSTREE_SYS_BUILD}/usr/lib/
+        ${OSTREE_SYS_BUILD}/etc/pacman.conf
 
     # Ostreeify: directory layout (https://ostree.readthedocs.io/en/stable/manual/adapting-existing)
     mv ${OSTREE_SYS_BUILD}/etc ${OSTREE_SYS_BUILD}/usr/
 
-    rm -r ${OSTREE_SYS_BUILD}/home && \
-        ln -s var/home ${OSTREE_SYS_BUILD}/home
+    rm -r ${OSTREE_SYS_BUILD}/home
+    ln -s var/home ${OSTREE_SYS_BUILD}/home
 
-    rm -r ${OSTREE_SYS_BUILD}/mnt && \
-        ln -s var/mnt ${OSTREE_SYS_BUILD}/mnt
+    rm -r ${OSTREE_SYS_BUILD}/mnt
+    ln -s var/mnt ${OSTREE_SYS_BUILD}/mnt
 
-    rm -r ${OSTREE_SYS_BUILD}/opt && \
-        ln -s var/opt ${OSTREE_SYS_BUILD}/opt
+    rm -r ${OSTREE_SYS_BUILD}/opt
+    ln -s var/opt ${OSTREE_SYS_BUILD}/opt
 
-    rm -r ${OSTREE_SYS_BUILD}/root && \
-        ln -s var/roothome ${OSTREE_SYS_BUILD}/root
+    rm -r ${OSTREE_SYS_BUILD}/root
+    ln -s var/roothome ${OSTREE_SYS_BUILD}/root
 
-    rm -r ${OSTREE_SYS_BUILD}/srv && \
-        ln -s var/srv ${OSTREE_SYS_BUILD}/srv
+    rm -r ${OSTREE_SYS_BUILD}/srv
+    ln -s var/srv ${OSTREE_SYS_BUILD}/srv
 
-    mkdir ${OSTREE_SYS_BUILD}/sysroot && \
-        ln -s sysroot/ostree ${OSTREE_SYS_BUILD}/ostree
+    mkdir ${OSTREE_SYS_BUILD}/sysroot
+    ln -s sysroot/ostree ${OSTREE_SYS_BUILD}/ostree
 
-    rm -r ${OSTREE_SYS_BUILD}/usr/local && \
-        ln -s var/usrlocal ${OSTREE_SYS_BUILD}/usr/local
+    rm -r ${OSTREE_SYS_BUILD}/usr/local
+    ln -s var/usrlocal ${OSTREE_SYS_BUILD}/usr/local
 
-    # Pacman cache: /tmp/rootfs/var/cache/pacman/pkg
+    # Todo: pacman cache (/var/cache/pacman/pkg)
     rm -r ${OSTREE_SYS_BUILD}/var/*
 
-    echo "Creating tmpfiles" && \
-        echo "L /var/home - - - - ../sysroot/home" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/opt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/roothome 0700 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/srv 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/bin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/etc 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/games 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/include 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/lib 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/man 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/sbin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
-        echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "Creating tmpfiles"
+    echo "L /var/home - - - - ../sysroot/home" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/opt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/roothome 0700 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/srv 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/bin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/etc 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/games 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/include 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/lib 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/man 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/sbin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
 }
 
 # [OSTREE]: COMMIT
