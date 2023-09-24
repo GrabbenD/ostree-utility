@@ -31,9 +31,9 @@ This is a helper script which aids in curating your own setup by demonstrating h
 ### Persistence
 
 Everything is deleted between deployments except for:
-- `/etc/*` _(only if `--merge` option is specified)._
-- `/dev/*` _(partitions which OSTree does not reside on are untouched)._
-- `/var/*` _(always)._
+- `/etc` _(only if `--merge` option is specified)._
+- `/dev` _(partitions which OSTree does not reside on are untouched)._
+- `/var` _(always)._
 
 ### Motivation
 
