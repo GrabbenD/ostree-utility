@@ -129,20 +129,23 @@ function OSTREE_CREATE_IMAGE {
     # rmdir "$rootfs/var/opt"
     # mv "$rootfs/opt" "$rootfs/var/"
     # ln -s var/opt "$rootfs/opt"
-    mv ${OSTREE_SYS_BUILD}/home ${OSTREE_SYS_BUILD}/var/ && \
-        ln -s /var/home ${OSTREE_SYS_BUILD}/home
+    rm -r ${OSTREE_SYS_BUILD}/home && \
+        ln -s var/home ${OSTREE_SYS_BUILD}/home
 
-    mv ${OSTREE_SYS_BUILD}/mnt ${OSTREE_SYS_BUILD}/var/ && \
-        ln -s /var/mnt ${OSTREE_SYS_BUILD}/mnt
+    rm -r ${OSTREE_SYS_BUILD}/mnt && \
+        ln -s var/mnt ${OSTREE_SYS_BUILD}/mnt
 
-    mv ${OSTREE_SYS_BUILD}/root ${OSTREE_SYS_BUILD}/var/roothome && \
-        ln -s /var/roothome ${OSTREE_SYS_BUILD}/root
+    rm -r ${OSTREE_SYS_BUILD}/root && \
+        ln -s var/roothome ${OSTREE_SYS_BUILD}/root
 
     rm -r ${OSTREE_SYS_BUILD}/usr/local && \
-        ln -s /var/usrlocal ${OSTREE_SYS_BUILD}/usr/local
+        ln -s var/usrlocal ${OSTREE_SYS_BUILD}/usr/local
 
-    mv ${OSTREE_SYS_BUILD}/srv ${OSTREE_SYS_BUILD}/var/srv && \
-        ln -s /var/srv ${OSTREE_SYS_BUILD}/srv
+    rm -r ${OSTREE_SYS_BUILD}/srv && \
+        ln -s var/srv ${OSTREE_SYS_BUILD}/srv
+
+    # Pacman cache: /tmp/rootfs/var/cache/pacman/pkg
+    rm -r ${OSTREE_SYS_BUILD}/var/*
 
     echo "Creating tmpfiles" && \
         echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
@@ -163,10 +166,8 @@ function OSTREE_CREATE_IMAGE {
         echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf && \
         echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
 
-    rm -r ${OSTREE_SYS_BUILD}/var/*
-
     mkdir ${OSTREE_SYS_BUILD}/sysroot && \
-        ln -s /sysroot/ostree ${OSTREE_SYS_BUILD}/ostree
+        ln -s sysroot/ostree ${OSTREE_SYS_BUILD}/ostree
 
     mv ${OSTREE_SYS_BUILD}/etc ${OSTREE_SYS_BUILD}/usr/
 }
