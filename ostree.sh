@@ -82,8 +82,6 @@ function OSTREE_CREATE_REPO {
 }
 
 # [OSTREE]: CONTAINER
-# | Todo: remove `rm -rf /etc` once Podman inconsistency is fixed (https://github.com/containers/podman/issues/20001#issuecomment-1725003336)
-# | Todo: use tar format (`podman build -f ${PODMAN_OPT_BUILDFILE} -o dest=${OSTREE_SYS_BUILD}.tar,type=tar`)
 function OSTREE_CREATE_IMAGE {
     # Podman: add support for overlay storage driver in LiveCD
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
@@ -173,7 +171,6 @@ function OSTREE_CREATE_IMAGE {
 # [OSTREE]: COMMIT
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
-    #ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=tar=${OSTREE_SYS_BUILD}.tar --tar-autocreate-parents
     ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=dir=${OSTREE_SYS_BUILD}
     ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --retain archlinux/latest ${OSTREE_OPT_NOMERGE[@]}
 }
