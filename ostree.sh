@@ -96,12 +96,13 @@ function OSTREE_CREATE_IMAGE {
     # Podman: create rootfs (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_CREATE_DEPS podman
     podman ${PODMAN_OPT_GLOBAL[@]} build \
-        -f ${PODMAN_OPT_BUILDFILE} \
-        -t rootfs \
-        --build-arg OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL} \
-        --build-arg OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL} \
-        --build-arg OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL} \
-        --build-arg SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}
+        --file="${PODMAN_OPT_BUILDFILE}" \
+        --tag="rootfs" \
+        --build-arg="OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL}" \
+        --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
+        --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
+        --build-arg="SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}" \
+        --pull="always"
 
     # Ostreeify: retrieve rootfs
     rm -rf ${OSTREE_SYS_BUILD}
