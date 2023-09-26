@@ -35,6 +35,13 @@ Everything is deleted between deployments except for:
 - `/dev` _(partitions which OSTree does not reside on are untouched)._
 - `/var` _(always)._
 
+### Technology stack
+
+- OSTree
+- Podman with CRUN and Native-Overlayfs
+- GRUB2
+- XFS _(not required)_
+
 ### Motivation
 
 My vision is to build a secure and minimal base system which is resilent against breakage and provides setup automation to reduce the burden of doing manual tasks. This can be achieved by:
