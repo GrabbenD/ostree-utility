@@ -88,8 +88,8 @@ function OSTREE_CREATE_IMAGE {
         ENV_CREATE_DEPS fuse-overlayfs
         export TMPDIR="/tmp/podman"
         export PODMAN_OPT_GLOBAL=(
-            --root ${TMPDIR}/storage
-            --tmpdir ${TMPDIR}/tmp
+            --root="${TMPDIR}/storage"
+            --tmpdir="${TMPDIR}/tmp"
         )
     fi
 
