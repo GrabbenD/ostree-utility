@@ -31,10 +31,9 @@ RUN pacman --noconfirm -S networkmanager && \
 ## | OSTREE INSTALLATION
 ## |
 
-# Prepre OSTree integration
+# Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d && \
-    echo "SD_NETWORK_CONFIG=/etc/systemd/network-initramfs" >> /etc/mkinitcpio.conf.d/ostree.conf && \
-    echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole sd-network sd-tinyssh block sd-encrypt filesystems fsck)" >> /etc/mkinitcpio.conf.d/ostree.conf
+    echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" >> /etc/mkinitcpio.conf.d/ostree.conf
 
 # Install kernel, firmware, microcode, filesystem tools, bootloader, depndencies and run hooks once:
 RUN pacman --noconfirm -S \
