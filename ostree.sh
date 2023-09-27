@@ -202,7 +202,7 @@ function BOOTLOADER_CREATE {
 argument=${1:-}
 
 # Options
-while [[ $# -gt 1 ]]; do
+while [[ ${#} -gt 1 ]]; do
     case ${2} in
         -d|--dev)
             export OSTREE_DEV_SCSI=${3}
@@ -225,7 +225,7 @@ while [[ $# -gt 1 ]]; do
         ;;
 
         *)
-            echo "Unknown option: ${2}"
+            printf '%s\n' "Unknown option: ${2}"
             exit 2
         ;;
     esac
