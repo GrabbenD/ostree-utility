@@ -263,6 +263,19 @@ case ${argument} in
     ;;
 
     *)
-        echo "Usage: ostree.sh {install|upgrade|revert} [-d, --dev] [-f, --file] [-m, --merge] [-t, --time]"
+        help=(
+            "Usage:"
+            "  ostree.sh [command] [options]"
+            "Commands:"
+            "  install : (Create deployment) : Partitions, formats and initializes a new OSTree repository."
+            "  upgrade : (Update deployment) : Creates a new OSTree commit."
+            "  revert  : (Update deployment) : Rolls back version 0."
+            "Options:"
+            "  -d, --dev  string      : (install)         : Device SCSI (ID-LINK) for new installation."
+            "  -f, --file string      : (install/upgrade) : Containerfile for new deployment."
+            "  -m, --merge            : (upgrade)         : Retain contents of /etc for existing deployment."
+            "  -t, --time             : (install/upgrade) : Update host's timezone for new deployment."
+        )
+        printf '%s\n' "${help[@]}"
     ;;
 esac
