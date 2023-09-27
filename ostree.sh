@@ -27,6 +27,7 @@ function ENV_CREATE_OPTS {
         timedatectl set-ntp true
     fi
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
+    export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:="us"}
     export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile.base.archlinux:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
 }
 
@@ -105,6 +106,7 @@ function OSTREE_CREATE_IMAGE {
             --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
             --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
             --build-arg="SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}" \
+            --build-arg="SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP}" \
             --pull="newer"
     done
 
@@ -218,6 +220,11 @@ while [[ ${#} -gt 1 ]]; do
             shift 2 # Get value
         ;;
 
+        -k|--keymap)
+            export SYSTEM_OPT_KEYMAP=${3}
+            shift 2 # Get value
+        ;;
+
         -m|--merge)
             export OSTREE_OPT_NOMERGE=""
             shift 1 # Finish
@@ -275,10 +282,11 @@ case ${argument} in
             "  upgrade : (Update deployment) : Creates a new OSTree commit."
             "  revert  : (Update deployment) : Rolls back version 0."
             "Options:"
-            "  -d, --dev  string      : (install)         : Device SCSI (ID-LINK) for new installation."
-            "  -f, --file stringArray : (install/upgrade) : Containerfile(s) for new deployment."
-            "  -m, --merge            : (upgrade)         : Retain contents of /etc for existing deployment."
-            "  -t, --time             : (install/upgrade) : Update host's timezone for new deployment."
+            "  -d, --dev    string      : (install)         : Device SCSI (ID-LINK) for new installation."
+            "  -f, --file   stringArray : (install/upgrade) : Containerfile(s) for new deployment."
+            "  -k, --keymap string      : (install/upgrade) : TTY keyboard layout for new deployment."
+            "  -m, --merge              : (upgrade)         : Retain contents of /etc for existing deployment."
+            "  -t, --time               : (install/upgrade) : Update host's timezone for new deployment."
         )
         printf '%s\n' "${help[@]}"
     ;;

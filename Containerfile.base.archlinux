@@ -14,7 +14,8 @@ ARG SYSTEM_OPT_TIMEZONE
 RUN ln -sf /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
 
 # Keymap hook
-RUN echo "KEYMAP=sv-latin1" | tee /etc/vconsole.conf
+ARG SYSTEM_OPT_KEYMAP
+RUN echo "KEYMAP=${SYSTEM_OPT_KEYMAP}" | tee /etc/vconsole.conf
 
 # Language
 RUN echo "LANG=en_US.UTF-8" | tee /etc/locale.conf && \
