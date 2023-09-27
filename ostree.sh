@@ -27,7 +27,7 @@ function ENV_CREATE_OPTS {
         timedatectl set-ntp true
     fi
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
-    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile"}
+    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile.base.archlinux:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
 }
 
 # [ENVIRONMENT]: INSTALL DEPENDENCIES
@@ -93,21 +93,25 @@ function OSTREE_CREATE_IMAGE {
         )
     fi
 
-    # Podman: create rootfs (workaround: `podman build --output local` doesn't preserve ownership)
+    # Podman: create rootfs from multiple Containerfiles (workaround: `podman build --output local` doesn't preserve ownership)
     ENV_CREATE_DEPS podman
-    podman ${PODMAN_OPT_GLOBAL[@]} build \
-        --file="${PODMAN_OPT_BUILDFILE}" \
-        --tag="rootfs" \
-        --build-arg="OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL}" \
-        --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
-        --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
-        --build-arg="SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}" \
-        --pull="always"
+    for TARGET in ${PODMAN_OPT_BUILDFILE//,/ }; do
+        export PODMAN_OPT_IMG=(${TARGET%:*})
+        export PODMAN_OPT_TAG=(${TARGET#*:})
+        podman ${PODMAN_OPT_GLOBAL[@]} build \
+            --file="${PODMAN_OPT_IMG}" \
+            --tag="${PODMAN_OPT_TAG}" \
+            --build-arg="OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL}" \
+            --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
+            --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
+            --build-arg="SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}" \
+            --pull="newer"
+    done
 
     # Ostreeify: retrieve rootfs
     rm -rf ${OSTREE_SYS_BUILD}
     mkdir ${OSTREE_SYS_BUILD}
-    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create rootfs bash) | tar -xC ${OSTREE_SYS_BUILD}
+    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create ${PODMAN_OPT_TAG} bash) | tar -xC ${OSTREE_SYS_BUILD}
 
     # Ostreeify: Prepare microcode and initramfs
     moduledir=$(find ${OSTREE_SYS_BUILD}/usr/lib/modules -mindepth 1 -maxdepth 1 -type d)
@@ -272,7 +276,7 @@ case ${argument} in
             "  revert  : (Update deployment) : Rolls back version 0."
             "Options:"
             "  -d, --dev  string      : (install)         : Device SCSI (ID-LINK) for new installation."
-            "  -f, --file string      : (install/upgrade) : Containerfile for new deployment."
+            "  -f, --file stringArray : (install/upgrade) : Containerfile(s) for new deployment."
             "  -m, --merge            : (upgrade)         : Retain contents of /etc for existing deployment."
             "  -t, --time             : (install/upgrade) : Update host's timezone for new deployment."
         )

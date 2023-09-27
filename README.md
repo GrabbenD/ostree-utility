@@ -113,7 +113,7 @@ My vision is to build a secure and minimal base system which is resilent against
 
    💡 Default login is: `root` / `ostree`
 
-   💡 Use a different Containerfile with `--file` option
+   💡 Use different Containerfile(s) with `--file FILE1:TAG1,FILE2:TAG2` option
 
 5. **Upgrade an existing installation:**
 
