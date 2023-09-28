@@ -52,9 +52,15 @@ RUN pacman --noconfirm -S \
     ostree \
     which
 
-# Native Overlay Diff for optimal Podman performance
-RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
+# OSTree: Prepare microcode and initramfs
+RUN moduledir=$(find ${OSTREE_SYS_BUILD}/usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
+    cat ${OSTREE_SYS_BUILD}/boot/*-ucode.img \
+        ${OSTREE_SYS_BUILD}/boot/initramfs-linux-fallback.img \
+        > ${moduledir}/initramfs.img
 
-# Bootloader integration
+# OSTree: Bootloader integration
 RUN curl https://raw.githubusercontent.com/ostreedev/ostree/v2023.6/src/boot/grub2/grub2-15_ostree -o /etc/grub.d/15_ostree && \
     chmod +x /etc/grub.d/15_ostree
+
+# Podman: native Overlay Diff for optimal Podman performance
+RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
