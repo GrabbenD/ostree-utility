@@ -86,7 +86,7 @@ function OSTREE_CREATE_REPO {
 
 # [OSTREE]: BUILD ROOTFS
 function OSTREE_CREATE_ROOTFS {
-    # Podman: add support for overlay storage driver in LiveCD
+    # Add support for overlay storage driver in LiveCD
     if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
         export TMPDIR="/tmp/podman"
@@ -99,7 +99,7 @@ function OSTREE_CREATE_ROOTFS {
     # Install Podman
     ENV_CREATE_DEPS podman
 
-    # Copy Pacman package cache to /var by default
+    # Copy Pacman package cache into /var by default (to avoid duplication)
     if [[ -n ${PACMAN_OPT_CACHE:-} ]]; then
         mkdir -p /var/cache/pacman
         export PODMAN_OPT_BUILD=(
@@ -182,7 +182,7 @@ function OSTREE_CREATE_LAYOUT {
     echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
     echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
 
-    # Ostreeify: retain information about Pacman packages from current deployment
+    # Only retain information about Pacman packages in new rootfs
     mv ${OSTREE_SYS_BUILD}/var/lib/pacman ${OSTREE_SYS_BUILD}/usr/lib/
     sed -i \
         -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \

@@ -30,10 +30,15 @@ This is a helper script which aids in curating your own setup by demonstrating h
 
 ### Persistence
 
-Everything is deleted between deployments except for:
-- `/etc` _(only if `--merge` option is specified)._
-- `/dev` _(partitions which OSTree does not reside on are untouched)._
-- `/var` _(always)._
+Everything is deleted between deployments **except** for:
+- `/dev` partitions which OSTree does not reside on are untouched.
+- `/etc` only if `--merge` option is specified.
+- `/home` is symlinked to `/var/home` (see below).
+- `/var` always, data here is mounted from `/ostree/deploy/archlinux/var` to avoid duplication.
+
+Notes:
+- `/var/cache/podman` is populated _only_ after the first deployment (to avoid including old data from build machine), this speeds up consecutive builds.
+- `/var/lib/containers` same as above but for Podman layers and images. Base images are updated automatically during `upgrade` command.
 
 ### Technology stack
 
