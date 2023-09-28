@@ -37,7 +37,7 @@ Everything is deleted between deployments **except** for:
 - `/var` always, data here is mounted from `/ostree/deploy/archlinux/var` to avoid duplication.
 
 Notes:
-- `/var/cache/podman` is populated _only_ after the first deployment (to avoid including old data from build machine), this speeds up consecutive builds.
+- `/var/cache/podman` is populated _only_ after the first deployment (to avoid including old data from the build machine), this speeds up consecutive builds.
 - `/var/lib/containers` same as above but for Podman layers and images. Base images are updated automatically during `upgrade` command.
 
 ### Technology stack

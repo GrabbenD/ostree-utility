@@ -53,9 +53,9 @@ RUN pacman --noconfirm -S \
     which
 
 # OSTree: Prepare microcode and initramfs
-RUN moduledir=$(find ${OSTREE_SYS_BUILD}/usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
-    cat ${OSTREE_SYS_BUILD}/boot/*-ucode.img \
-        ${OSTREE_SYS_BUILD}/boot/initramfs-linux-fallback.img \
+RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
+    cat /boot/*-ucode.img \
+        /boot/initramfs-linux-fallback.img \
         > ${moduledir}/initramfs.img
 
 # OSTree: Bootloader integration

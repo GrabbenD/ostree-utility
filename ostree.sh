@@ -15,7 +15,7 @@ function ENV_CREATE_OPTS {
     fi
 
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
-    export OSTREE_SYS_BUILD=${OSTREE_SYS_BUILD:="/tmp/rootfs"}
+    export OSTREE_SYS_TREE=${OSTREE_SYS_TREE:="/tmp/rootfs"}
     export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
@@ -132,71 +132,71 @@ function OSTREE_CREATE_ROOTFS {
     done
 
     # Ostreeify: retrieve rootfs (workaround: `podman build --output local` doesn't preserve ownership)
-    rm -rf ${OSTREE_SYS_BUILD}
-    mkdir ${OSTREE_SYS_BUILD}
-    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create ${PODMAN_OPT_TAG} bash) | tar -xC ${OSTREE_SYS_BUILD}
+    rm -rf ${OSTREE_SYS_TREE}
+    mkdir ${OSTREE_SYS_TREE}
+    podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create ${PODMAN_OPT_TAG} bash) | tar -xC ${OSTREE_SYS_TREE}
 }
 
 # [OSTREE]: DIRECTORY STRUCTURE (https://ostree.readthedocs.io/en/stable/manual/adapting-existing)
 function OSTREE_CREATE_LAYOUT {
     # Doing it here allows the container to be runnable/debuggable and Containerfile reusable
-    mv ${OSTREE_SYS_BUILD}/etc ${OSTREE_SYS_BUILD}/usr/
+    mv ${OSTREE_SYS_TREE}/etc ${OSTREE_SYS_TREE}/usr/
 
-    rm -r ${OSTREE_SYS_BUILD}/home
-    ln -s var/home ${OSTREE_SYS_BUILD}/home
+    rm -r ${OSTREE_SYS_TREE}/home
+    ln -s var/home ${OSTREE_SYS_TREE}/home
 
-    rm -r ${OSTREE_SYS_BUILD}/mnt
-    ln -s var/mnt ${OSTREE_SYS_BUILD}/mnt
+    rm -r ${OSTREE_SYS_TREE}/mnt
+    ln -s var/mnt ${OSTREE_SYS_TREE}/mnt
 
-    rm -r ${OSTREE_SYS_BUILD}/opt
-    ln -s var/opt ${OSTREE_SYS_BUILD}/opt
+    rm -r ${OSTREE_SYS_TREE}/opt
+    ln -s var/opt ${OSTREE_SYS_TREE}/opt
 
-    rm -r ${OSTREE_SYS_BUILD}/root
-    ln -s var/roothome ${OSTREE_SYS_BUILD}/root
+    rm -r ${OSTREE_SYS_TREE}/root
+    ln -s var/roothome ${OSTREE_SYS_TREE}/root
 
-    rm -r ${OSTREE_SYS_BUILD}/srv
-    ln -s var/srv ${OSTREE_SYS_BUILD}/srv
+    rm -r ${OSTREE_SYS_TREE}/srv
+    ln -s var/srv ${OSTREE_SYS_TREE}/srv
 
-    mkdir ${OSTREE_SYS_BUILD}/sysroot
-    ln -s sysroot/ostree ${OSTREE_SYS_BUILD}/ostree
+    mkdir ${OSTREE_SYS_TREE}/sysroot
+    ln -s sysroot/ostree ${OSTREE_SYS_TREE}/ostree
 
-    rm -r ${OSTREE_SYS_BUILD}/usr/local
-    ln -s var/usrlocal ${OSTREE_SYS_BUILD}/usr/local
+    rm -r ${OSTREE_SYS_TREE}/usr/local
+    ln -s var/usrlocal ${OSTREE_SYS_TREE}/usr/local
 
     echo "Creating tmpfiles"
-    echo "L /var/home - - - - ../sysroot/home" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/opt 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/roothome 0700 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/srv 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/bin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/etc 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/games 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/include 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/lib 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/man 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/sbin 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_BUILD}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "L /var/home - - - - ../sysroot/home" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/opt 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/roothome 0700 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/srv 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/bin 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/etc 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/games 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/include 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/lib 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/man 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/sbin 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
 
     # Only retain information about Pacman packages in new rootfs
-    mv ${OSTREE_SYS_BUILD}/var/lib/pacman ${OSTREE_SYS_BUILD}/usr/lib/
+    mv ${OSTREE_SYS_TREE}/var/lib/pacman ${OSTREE_SYS_TREE}/usr/lib/
     sed -i \
         -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
         -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
-        ${OSTREE_SYS_BUILD}/usr/etc/pacman.conf
+        ${OSTREE_SYS_TREE}/usr/etc/pacman.conf
 
     # OSTree mounts /ostree/deploy/archlinux/var to /var
-    rm -r ${OSTREE_SYS_BUILD}/var/*
+    rm -r ${OSTREE_SYS_TREE}/var/*
 }
 
 # [OSTREE]: CREATE COMMIT
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
-    ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=dir=${OSTREE_SYS_BUILD}
+    ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=dir=${OSTREE_SYS_TREE}
     ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --retain archlinux/latest ${OSTREE_OPT_NOMERGE[@]}
 }
 
