@@ -133,7 +133,7 @@ function OSTREE_CREATE_ROOTFS {
 
     # Ostreeify: retrieve rootfs (workaround: `podman build --output local` doesn't preserve ownership)
     rm -rf ${OSTREE_SYS_TREE}
-    mkdir ${OSTREE_SYS_TREE}
+    mkdir -p ${OSTREE_SYS_TREE}
     podman ${PODMAN_OPT_GLOBAL[@]} export $(podman ${PODMAN_OPT_GLOBAL[@]} create ${PODMAN_OPT_TAG} bash) | tar -xC ${OSTREE_SYS_TREE}
 }
 
@@ -219,7 +219,7 @@ function BOOTLOADER_CREATE {
     for i in /dev /proc /sys; do mount -o bind $i ${OSTREE_SYS_PATH}${i}; done
     chroot ${OSTREE_SYS_PATH} /bin/bash -c "grub-mkconfig -o /boot/efi/EFI/grub/grub.cfg"
 
-    umount -R ${OSTREE_SYS_ROOT}
+    umount --recursive ${OSTREE_SYS_ROOT}
 }
 
 # [CLI]: TASKS FINECONTROL
