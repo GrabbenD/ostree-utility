@@ -164,7 +164,7 @@ function OSTREE_CREATE_LAYOUT {
     ln -s var/usrlocal ${OSTREE_SYS_TREE}/usr/local
 
     echo "Creating tmpfiles"
-    echo "L /var/home - - - - ../sysroot/home" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo "d /var/home 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
     echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
     echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
     echo "d /var/opt 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
