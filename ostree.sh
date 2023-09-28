@@ -11,7 +11,7 @@ function ENV_CREATE_OPTS {
         export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
         export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
         export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
-        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/mnt"}
+        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/tmp/chroot"}
     fi
 
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
@@ -50,7 +50,8 @@ function ENV_VERIFY_LOCAL {
 # [DISK]: PARTITIONING (GPT+UEFI)
 function DISK_CREATE_LAYOUT {
     ENV_CREATE_DEPS parted
-    umount --lazy --recursive ${OSTREE_DEV_DISK}-part* ${OSTREE_SYS_ROOT} || :
+    mkdir -p ${OSTREE_SYS_ROOT}
+    lsblk --noheadings --output MOUNTPOINTS | grep -w ${OSTREE_SYS_ROOT} | xargs -r umount --lazy --verbose
     parted -a optimal -s ${OSTREE_DEV_DISK} -- \
         mklabel gpt \
         mkpart ${OSTREE_SYS_BOOT_LABEL} fat32 0% 257MiB \
