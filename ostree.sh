@@ -28,7 +28,7 @@ function ENV_CREATE_OPTS {
     fi
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
     export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:="us"}
-    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile.base.archlinux:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
+    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile.base.cachyos:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
     export PODMAN_OPT_CACHE=(${PODMAN_OPT_CACHE="true"})
     export PACMAN_OPT_CACHE=(${PACMAN_OPT_CACHE="true"})
 }
@@ -123,6 +123,7 @@ function OSTREE_CREATE_ROOTFS {
             ${PODMAN_OPT_BUILD[@]} \
             --file="${PODMAN_OPT_IMG}" \
             --tag="${PODMAN_OPT_TAG}" \
+            --cap-add="SYS_ADMIN" \
             --build-arg="OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL}" \
             --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
             --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
