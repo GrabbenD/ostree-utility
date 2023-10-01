@@ -162,7 +162,7 @@ function OSTREE_CREATE_LAYOUT {
     ln -s sysroot/ostree ${OSTREE_SYS_TREE}/ostree
 
     rm -r ${OSTREE_SYS_TREE}/usr/local
-    ln -s var/usrlocal ${OSTREE_SYS_TREE}/usr/local
+    ln -s ../var/usrlocal ${OSTREE_SYS_TREE}/usr/local
 
     printf '%s\n' "Creating tmpfiles"
     echo "d /var/home 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
