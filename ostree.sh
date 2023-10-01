@@ -143,7 +143,7 @@ function OSTREE_CREATE_LAYOUT {
     mv ${OSTREE_SYS_TREE}/etc ${OSTREE_SYS_TREE}/usr/
 
     rm -r ${OSTREE_SYS_TREE}/home
-    ln -s /var/home ${OSTREE_SYS_TREE}/home
+    ln -s var/home ${OSTREE_SYS_TREE}/home
 
     rm -r ${OSTREE_SYS_TREE}/mnt
     ln -s /var/mnt ${OSTREE_SYS_TREE}/mnt
