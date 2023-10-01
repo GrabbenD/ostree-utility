@@ -5,12 +5,9 @@
 # Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
 FROM docker.io/library/archlinux AS rootfs
 
-# Generate a GPG secret key for signing and populate the keyring
+# Generate a GPG secret key for signing and import CachyOS keys
 RUN pacman-key --init && \
-    pacman-key --populate
-
-# Import CachyOS keys
-RUN pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
+    pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
     pacman-key --lsign-key F3B607488DB35A47
 
 # Import CachyOS v3 repositories to current package manager
