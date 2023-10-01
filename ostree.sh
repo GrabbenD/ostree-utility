@@ -149,7 +149,7 @@ function OSTREE_CREATE_LAYOUT {
     ln -s var/mnt ${OSTREE_SYS_TREE}/mnt
 
     rm -r ${OSTREE_SYS_TREE}/opt
-    ln -s /var/opt ${OSTREE_SYS_TREE}/opt
+    ln -s var/opt ${OSTREE_SYS_TREE}/opt
 
     rm -r ${OSTREE_SYS_TREE}/root
     ln -s /var/roothome ${OSTREE_SYS_TREE}/root
