@@ -143,25 +143,25 @@ function OSTREE_CREATE_LAYOUT {
     mv ${OSTREE_SYS_TREE}/etc ${OSTREE_SYS_TREE}/usr/
 
     rm -r ${OSTREE_SYS_TREE}/home
-    ln -s var/home ${OSTREE_SYS_TREE}/home
+    ln -s /var/home ${OSTREE_SYS_TREE}/home
 
     rm -r ${OSTREE_SYS_TREE}/mnt
-    ln -s var/mnt ${OSTREE_SYS_TREE}/mnt
+    ln -s /var/mnt ${OSTREE_SYS_TREE}/mnt
 
     rm -r ${OSTREE_SYS_TREE}/opt
-    ln -s var/opt ${OSTREE_SYS_TREE}/opt
+    ln -s /var/opt ${OSTREE_SYS_TREE}/opt
 
     rm -r ${OSTREE_SYS_TREE}/root
-    ln -s var/roothome ${OSTREE_SYS_TREE}/root
+    ln -s /var/roothome ${OSTREE_SYS_TREE}/root
 
     rm -r ${OSTREE_SYS_TREE}/srv
-    ln -s var/srv ${OSTREE_SYS_TREE}/srv
+    ln -s /var/srv ${OSTREE_SYS_TREE}/srv
 
     mkdir ${OSTREE_SYS_TREE}/sysroot
-    ln -s sysroot/ostree ${OSTREE_SYS_TREE}/ostree
+    ln -s /sysroot/ostree ${OSTREE_SYS_TREE}/ostree
 
     rm -r ${OSTREE_SYS_TREE}/usr/local
-    ln -s var/usrlocal ${OSTREE_SYS_TREE}/usr/local
+    ln -s /var/usrlocal ${OSTREE_SYS_TREE}/usr/local
 
     printf '%s\n' "Creating tmpfiles"
     echo "d /var/home 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
