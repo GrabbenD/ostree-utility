@@ -158,7 +158,7 @@ function OSTREE_CREATE_LAYOUT {
     ln -s var/srv ${OSTREE_SYS_TREE}/srv
 
     mkdir ${OSTREE_SYS_TREE}/sysroot
-    ln -s /sysroot/ostree ${OSTREE_SYS_TREE}/ostree
+    ln -s sysroot/ostree ${OSTREE_SYS_TREE}/ostree
 
     rm -r ${OSTREE_SYS_TREE}/usr/local
     ln -s /var/usrlocal ${OSTREE_SYS_TREE}/usr/local
