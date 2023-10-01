@@ -185,6 +185,7 @@ function OSTREE_CREATE_LAYOUT {
 
     # Only retain information about Pacman packages in new rootfs
     mv ${OSTREE_SYS_TREE}/var/lib/pacman ${OSTREE_SYS_TREE}/usr/lib/
+    mkdir /usr/lib/pacmanlocal
     sed -i \
         -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
         -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \

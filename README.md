@@ -1,6 +1,6 @@
 ## OSTree in Arch Linux using Podman
 
-Massive shoutout to [M1cha](https://github.com/M1cha/) for making this possible ([M1cha/archlinux-ostree](https://github.com/M1cha/archlinux-ostree)).
+Massive shout-out to [M1cha](https://github.com/M1cha/) for making this possible ([M1cha/archlinux-ostree](https://github.com/M1cha/archlinux-ostree)).
 
 ### Overview
 
@@ -49,7 +49,7 @@ Notes:
 
 ### Motivation
 
-My vision is to build a secure and minimal base system which is resilent against breakage and provides setup automation to reduce the burden of doing manual tasks. This can be achieved by:
+My vision is to build a secure and minimal base system which is resilient against breakage and provides setup automation to reduce the burden of doing manual tasks. This can be achieved by:
 
 - Git.
 - Read-only system files.
@@ -107,7 +107,7 @@ My vision is to build a secure and minimal base system which is resilent against
 
    **⚠️ WARNING ⚠️**
 
-   `ostree.sh` is destrucive and has no promps while partitioning the specified disk, **proceed with caution**:
+   `ostree.sh` is destructive and has no prompts while partitioning the specified disk, **proceed with caution**:
 
    ```console
    $ chmod +x ostree.sh
@@ -137,3 +137,13 @@ My vision is to build a secure and minimal base system which is resilent against
    ```console
    $ sudo ./ostree.sh revert
    ```
+
+## Tips
+
+### Read-only
+
+This attribute can be temporarily removed with Overlay filesystem which allows you to modify read-only paths without persisting the changes:
+
+```console
+$ ostree admin unlock
+```
