@@ -11,8 +11,8 @@ RUN mkdir -p /etc/mkinitcpio.conf.d && \
 
 # Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
 RUN pacman --noconfirm -S \
-    linux \
-    linux-headers \
+    linux-cachyos-lto \
+    linux-cachyos-lto-headers \
     linux-firmware \
     amd-ucode \
     \
@@ -30,7 +30,7 @@ RUN pacman --noconfirm -S \
 # OSTree: Prepare microcode and initramfs
 RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
     cat /boot/*-ucode.img \
-        /boot/initramfs-linux-fallback.img \
+        /boot/initramfs-linux-cachyos-lto-fallback.img \
         > ${moduledir}/initramfs.img
 
 # OSTree: Bootloader integration
