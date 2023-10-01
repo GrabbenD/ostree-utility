@@ -186,11 +186,13 @@ function OSTREE_CREATE_LAYOUT {
 
     # Only retain information about Pacman packages in new rootfs
     mv ${OSTREE_SYS_TREE}/var/lib/pacman ${OSTREE_SYS_TREE}/usr/lib/
-    mkdir /usr/lib/pacmanlocal
     sed -i \
         -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
         -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
         ${OSTREE_SYS_TREE}/usr/etc/pacman.conf
+
+    # Allow Pacman to store update notice id during unlock mode
+    mkdir ${OSTREE_SYS_TREE}/usr/lib/pacmanlocal
 
     # OSTree mounts /ostree/deploy/archlinux/var to /var
     rm -r ${OSTREE_SYS_TREE}/var/*
