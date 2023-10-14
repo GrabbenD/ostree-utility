@@ -5,7 +5,7 @@ Massive shout-out to [M1cha](https://github.com/M1cha/) for making this possible
 ### Overview
 
 This is a helper script which aids in curating your own setup by demonstrating how to:
-1. Build an immutable OSTree image using rootfs from a Podman Containerfile.
+1. Build an immutable OSTree image by using rootfs from a Podman Containerfile.
 2. Partition and prepare UEFI/GPT disks for a minimal OSTree host system.
 3. Generate OSTree repository in a empty filesystem.
 4. Integrate OSTree with GRUB2 bootloader.
@@ -14,6 +14,7 @@ This is a helper script which aids in curating your own setup by demonstrating h
 ### Disk structure
 
 ```console
+/
 ├── boot
 │   └── efi
 └── ostree
@@ -34,7 +35,7 @@ Everything is deleted between deployments **except** for:
 - `/dev` partitions which OSTree does not reside on are untouched.
 - `/etc` only if `--merge` option is specified.
 - `/home` is symlinked to `/var/home` (see below).
-- `/var` always, data here is mounted from `/ostree/deploy/archlinux/var` to avoid duplication.
+- `/var` data here is mounted from `/ostree/deploy/archlinux/var` to avoid duplication.
 
 Notes:
 - `/var/cache/podman` is populated _only_ after the first deployment (to avoid including old data from the build machine), this speeds up consecutive builds.
