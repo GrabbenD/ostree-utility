@@ -148,3 +148,14 @@ This attribute can be temporarily removed with Overlay filesystem which allows y
 ```console
 $ ostree admin unlock
 ```
+
+### Outdated repository cache
+
+> `error: failed retrieving file '{name}.pkg.tar.zst' from {source} : The requested URL returned error: 404`
+
+Your persistent cache is out of sync with upstream, this can be resolved with:
+
+```console
+$ ./ostree.sh upgrade --no-cache
+```
+
