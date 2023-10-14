@@ -90,7 +90,7 @@ My vision is to build a secure and minimal base system which is resilient agains
 
    ```console
    $ sudo pacman -Sy git
-   $ git https://github.com/GrabbenD/ostree-utility.git && cd ostree-utility
+   $ git clone https://github.com/GrabbenD/ostree-utility.git && cd ostree-utility
    ```
 
 3. **Find `ID-LINK` for installation device where OSTree image will be deployed:**
