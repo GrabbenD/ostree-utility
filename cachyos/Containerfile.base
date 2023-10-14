@@ -10,11 +10,11 @@ RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
     pacman-key --lsign-key F3B607488DB35A47
 
-# Import CachyOS v3 repositories to current package manager
+# Import CachyOS x86_64-v3 repositories to current package manager
+COPY etc/pacman.conf /etc/
 RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist && \
     curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-v3-mirrorlist/cachyos-v3-mirrorlist -o /etc/pacman.d/cachyos-v3-mirrorlist && \
-    curl https://raw.githubusercontent.com/CachyOS/docker/master/pacman-v3.conf -o /etc/pacman.conf && \
-    pacman --noconfirm --needed -Sy cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-v4-mirrorlist cachyos-hooks
+    pacman --noconfirm --needed -Sy cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks
 
 # Perform a clean system installation with latest CachyOS packages in chroot to correctly execute hooks, this uses host's Pacman
 RUN pacman --noconfirm -S arch-install-scripts && \
