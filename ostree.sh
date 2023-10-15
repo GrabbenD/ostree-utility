@@ -16,6 +16,7 @@ function ENV_CREATE_OPTS {
 
     export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
     export OSTREE_SYS_TREE=${OSTREE_SYS_TREE:="/tmp/rootfs"}
+    export OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=""}
     export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
@@ -202,7 +203,7 @@ function OSTREE_CREATE_LAYOUT {
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
     ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="archlinux/latest" --tree=dir="${OSTREE_SYS_TREE}"
-    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw" --os="archlinux" ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
+    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw ${OSTREE_SYS_KARG}" --os="archlinux" ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
 }
 
 # [OSTREE]: UNDO COMMIT
@@ -233,6 +234,11 @@ argument=${1:-}
 # Options
 while [[ ${#} -gt 1 ]]; do
     case ${2} in
+        -c|--cmdline)
+            export OSTREE_SYS_KARG=${3}
+            shift 2 # Get value
+        ;;
+
         -d|--dev)
             export OSTREE_DEV_SCSI=${3}
             shift 2 # Get value
@@ -323,14 +329,15 @@ case ${argument} in
             "  upgrade : (Update deployment) : Creates a new OSTree commit."
             "  revert  : (Update deployment) : Rolls back version 0."
             "Options:"
-            "  -d, --dev    string      : (install)         : Device SCSI (ID-LINK) for new installation."
-            "  -f, --file   stringArray : (install/upgrade) : Containerfile(s) for new deployment."
-            "  -k, --keymap string      : (install/upgrade) : TTY keyboard layout for new deployment."
-            "  -m, --merge              : (upgrade)         : Retain contents of /etc for existing deployment."
-            "  -n, --no-cache           : (install/upgrade) : Skip any cached data (note: first deployment will never retain any cache from host)"
-            "      --no-pacman-cache    : (install/upgrade) : Skip Pacman package cache"
-            "      --no-podman-cache    : (install/upgrade) : Skip Podman layer cache"
-            "  -t, --time               : (install/upgrade) : Update host's timezone for new deployment."
+            "  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot"
+            "  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation."
+            "  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment."
+            "  -k, --keymap  string      : (install/upgrade) : TTY keyboard layout for new deployment."
+            "  -m, --merge               : (upgrade)         : Retain contents of /etc for existing deployment."
+            "  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: first deployment will never retain any cache from host)"
+            "      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache"
+            "      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache"
+            "  -t, --time                : (install/upgrade) : Update host's timezone for new deployment."
         )
         printf '%s\n' "${help[@]}"
     ;;
