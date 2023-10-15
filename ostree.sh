@@ -19,7 +19,8 @@ function ENV_CREATE_OPTS {
     export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
     export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
-    export OSTREE_OPT_NOMERGE=(${OSTREE_OPT_NOMERGE="--no-merge"})
+    export OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE="--no-merge"}
+
 
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
@@ -29,8 +30,8 @@ function ENV_CREATE_OPTS {
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
     export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:="us"}
     export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile.base.archlinux:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
-    export PODMAN_OPT_CACHE=(${PODMAN_OPT_CACHE="true"})
-    export PACMAN_OPT_CACHE=(${PACMAN_OPT_CACHE="true"})
+    export PODMAN_OPT_CACHE=${PODMAN_OPT_CACHE="true"}
+    export PACMAN_OPT_CACHE=${PACMAN_OPT_CACHE="true"}
 }
 
 # [ENVIRONMENT]: BUILD DEPENDENCIES
@@ -52,7 +53,7 @@ function ENV_VERIFY_LOCAL {
 function DISK_CREATE_LAYOUT {
     ENV_CREATE_DEPS parted
     mkdir -p ${OSTREE_SYS_ROOT}
-    lsblk --noheadings --output MOUNTPOINTS | grep -w ${OSTREE_SYS_ROOT} | xargs -r umount --lazy --verbose
+    lsblk --noheadings --output="MOUNTPOINTS" | grep -w ${OSTREE_SYS_ROOT} | xargs -r umount --lazy --verbose
     parted -a optimal -s ${OSTREE_DEV_DISK} -- \
         mklabel gpt \
         mkpart ${OSTREE_SYS_BOOT_LABEL} fat32 0% 257MiB \
@@ -78,10 +79,10 @@ function DISK_CREATE_MOUNTS {
 # [OSTREE]: FIRST INITIALIZATION
 function OSTREE_CREATE_REPO {
     ENV_CREATE_DEPS ostree wget which
-    ostree admin init-fs --sysroot=${OSTREE_SYS_ROOT} --modern ${OSTREE_SYS_ROOT}
-    ostree admin stateroot-init --sysroot=${OSTREE_SYS_ROOT} archlinux
-    ostree init --repo=${OSTREE_SYS_ROOT}/ostree/repo --mode=bare
-    ostree config --repo=${OSTREE_SYS_ROOT}/ostree/repo set sysroot.bootprefix "true"
+    ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
+    ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" archlinux
+    ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode="bare"
+    ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix "true"
 }
 
 # [OSTREE]: BUILD ROOTFS
@@ -200,19 +201,19 @@ function OSTREE_CREATE_LAYOUT {
 # [OSTREE]: CREATE COMMIT
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
-    ostree commit --repo=${OSTREE_SYS_ROOT}/ostree/repo --branch=archlinux/latest --tree=dir=${OSTREE_SYS_TREE}
-    ostree admin deploy --sysroot=${OSTREE_SYS_ROOT} --karg="root=LABEL=SYS_ROOT" --karg="rw" --os=archlinux --retain archlinux/latest ${OSTREE_OPT_NOMERGE[@]}
+    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="archlinux/latest" --tree=dir="${OSTREE_SYS_TREE}"
+    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw" --os="archlinux" ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
 }
 
 # [OSTREE]: UNDO COMMIT
 function OSTREE_REVERT_IMAGE {
-    ostree admin undeploy --sysroot=${OSTREE_SYS_ROOT} 0
+    ostree admin undeploy --sysroot="${OSTREE_SYS_ROOT}" 0
 }
 
 # [BOOTLOADER]: FIRST BOOT
 # | Todo: improve grub-mkconfig
 function BOOTLOADER_CREATE {
-    grub-install --target=x86_64-efi --efi-directory=${OSTREE_SYS_ROOT}/boot/efi --removable --boot-directory=${OSTREE_SYS_ROOT}/boot/efi/EFI --bootloader-id=archlinux ${OSTREE_DEV_BOOT}
+    grub-install --target="x86_64-efi" --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id="archlinux" --removable ${OSTREE_DEV_BOOT}
 
     export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/archlinux/deploy/* | head -n 1)
 
