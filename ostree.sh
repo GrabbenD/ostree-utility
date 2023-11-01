@@ -166,7 +166,7 @@ function OSTREE_CREATE_LAYOUT {
     rm -r ${OSTREE_SYS_TREE}/usr/local
     ln -s ../var/usrlocal ${OSTREE_SYS_TREE}/usr/local
 
-    printf '%s\n' "Creating tmpfiles"
+    printf >&1 '%s\n' "Creating tmpfiles"
     echo "d /var/home 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
     echo "d /var/lib 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
     echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
@@ -282,7 +282,7 @@ while [[ ${#} -gt 1 ]]; do
         ;;
 
         *)
-            printf '%s\n' "Unknown option: ${2}"
+            printf >&2 '%s\n' "Unknown option: ${2}"
             exit 2
         ;;
     esac
@@ -340,6 +340,6 @@ case ${argument} in
             "      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache"
             "  -t, --time                : (install/upgrade) : Update host's timezone for new deployment."
         )
-        printf '%s\n' "${help[@]}"
+        printf >&1 '%s\n' "${help[@]}"
     ;;
 esac
