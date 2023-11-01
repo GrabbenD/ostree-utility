@@ -1,7 +1,4 @@
 #!/bin/bash
-set -x
-set -u
-set -e
 
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
@@ -204,6 +201,10 @@ function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
     ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="archlinux/latest" --tree=dir="${OSTREE_SYS_TREE}"
     ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw ${OSTREE_SYS_KARG}" --os="archlinux" ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
+set -o pipefail # Exit code from last command
+set -e          # Exit on non-zero status
+set -u          # Error on unset variables
+set -x          # Print executed commands
 }
 
 # [OSTREE]: UNDO COMMIT
