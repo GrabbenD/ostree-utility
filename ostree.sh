@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -o pipefail # Exit code from last command
 set -e          # Exit on non-zero status
 set -u          # Error on unset variables
