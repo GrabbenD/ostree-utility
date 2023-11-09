@@ -38,7 +38,7 @@ function ENV_CREATE_OPTS {
 # [ENVIRONMENT]: BUILD DEPENDENCIES
 function ENV_CREATE_DEPS {
     # Skip in OSTree as filesystem is read-only
-    if ! grep -q ostree /proc/cmdline; then
+    if [[ $(grep -L 'ostree' '/proc/cmdline') ]]; then
         pacman --noconfirm --needed -S $@
     fi
 }
