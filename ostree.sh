@@ -354,7 +354,7 @@ function CLI_SETUP {
 
         *)
             if [[ ! ${1:-} == 'help' && -n ${1:-} ]]; then
-                printf >&2 '\n%s\n' "Error: unknown command: ${1:-}"
+                printf >&2 '\n\e[31m%s\e[0m\n' "Error: unknown command: '${1:-}'"
                 exit 2
             fi
         ;;
