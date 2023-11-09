@@ -6,33 +6,33 @@ set -x          # Print executed commands
 
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
-    if [[ ! -d "/ostree" ]]; then
+    if [[ ! -d '/ostree' ]]; then
         # Do not touch disks in a booted system:
         export OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
         export OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
         export OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
         export OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
-        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/tmp/chroot"}
+        export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/tmp/chroot'}
     fi
 
-    export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:="/"}
-    export OSTREE_SYS_TREE=${OSTREE_SYS_TREE:="/tmp/rootfs"}
-    export OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=""}
-    export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:="SYS_BOOT"}
-    export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:="SYS_ROOT"}
-    export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
-    export OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE="--no-merge"}
+    export OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/'}
+    export OSTREE_SYS_TREE=${OSTREE_SYS_TREE:='/tmp/rootfs'}
+    export OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=''}
+    export OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:='SYS_BOOT'}
+    export OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:='SYS_ROOT'}
+    export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:='SYS_HOME'}
+    export OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE='--no-merge'}
 
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
         timedatectl set-timezone ${SYSTEM_OPT_TIMEZONE}
         timedatectl set-ntp true
     fi
-    export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
-    export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:="us"}
-    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/archlinux/Containerfile.base:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
-    export PODMAN_OPT_CACHE=${PODMAN_OPT_CACHE="true"}
-    export PACMAN_OPT_CACHE=${PACMAN_OPT_CACHE="true"}
+    export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
+    export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
+    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/archlinux/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
+    export PODMAN_OPT_CACHE=${PODMAN_OPT_CACHE='true'}
+    export PACMAN_OPT_CACHE=${PACMAN_OPT_CACHE='true'}
 }
 
 # [ENVIRONMENT]: BUILD DEPENDENCIES
@@ -45,7 +45,7 @@ function ENV_CREATE_DEPS {
 
 # [ENVIRONMENT]: OSTREE CHECK
 function ENV_VERIFY_LOCAL {
-    if [[ ! -d "/ostree" ]]; then
+    if [[ ! -d '/ostree' ]]; then
         exit 1
     fi
 }
@@ -54,7 +54,7 @@ function ENV_VERIFY_LOCAL {
 function DISK_CREATE_LAYOUT {
     ENV_CREATE_DEPS parted
     mkdir -p ${OSTREE_SYS_ROOT}
-    lsblk --noheadings --output="MOUNTPOINTS" | grep -w ${OSTREE_SYS_ROOT} | xargs -r umount --lazy --verbose
+    lsblk --noheadings --output='MOUNTPOINTS' | grep -w ${OSTREE_SYS_ROOT} | xargs -r umount --lazy --verbose
     parted -a optimal -s ${OSTREE_DEV_DISK} -- \
         mklabel gpt \
         mkpart ${OSTREE_SYS_BOOT_LABEL} fat32 0% 257MiB \
@@ -82,16 +82,16 @@ function OSTREE_CREATE_REPO {
     ENV_CREATE_DEPS ostree wget which
     ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" archlinux
-    ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode="bare"
-    ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix "true"
+    ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode='bare'
+    ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix 'true'
 }
 
 # [OSTREE]: BUILD ROOTFS
 function OSTREE_CREATE_ROOTFS {
     # Add support for overlay storage driver in LiveCD
-    if [[ $(df --output=fstype / | tail -n 1) = "overlay" ]]; then
+    if [[ $(df --output=fstype / | tail -n 1) = 'overlay' ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
-        export TMPDIR="/tmp/podman"
+        export TMPDIR='/tmp/podman'
         export PODMAN_OPT_GLOBAL=(
             --root="${TMPDIR}/storage"
             --tmpdir="${TMPDIR}/tmp"
@@ -105,7 +105,7 @@ function OSTREE_CREATE_ROOTFS {
     if [[ -n ${PACMAN_OPT_CACHE:-} ]]; then
         mkdir -p /var/cache/pacman
         export PODMAN_OPT_BUILD=(
-            --volume="/var/cache/pacman:/var/cache/pacman"
+            --volume='/var/cache/pacman:/var/cache/pacman'
         )
     fi
 
@@ -113,7 +113,7 @@ function OSTREE_CREATE_ROOTFS {
     if [[ ! -n ${PODMAN_OPT_CACHE:-} ]]; then
         export PODMAN_OPT_BUILD=(
             ${PODMAN_OPT_BUILD[@]}
-            --no-cache="true"
+            --no-cache='true'
         )
     fi
 
@@ -130,7 +130,7 @@ function OSTREE_CREATE_ROOTFS {
             --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
             --build-arg="SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE}" \
             --build-arg="SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP}" \
-            --pull="newer"
+            --pull='newer'
     done
 
     # Ostreeify: retrieve rootfs (workaround: `podman build --output local` doesn't preserve ownership)
@@ -165,31 +165,31 @@ function OSTREE_CREATE_LAYOUT {
     rm -r ${OSTREE_SYS_TREE}/usr/local
     ln -s ../var/usrlocal ${OSTREE_SYS_TREE}/usr/local
 
-    printf >&1 '%s\n' "Creating tmpfiles"
-    echo "d /var/home 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/lib 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/log/journal 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/mnt 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/opt 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/roothome 0700 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/srv 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/bin 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/etc 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/games 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/include 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/lib 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/man 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/sbin 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/share 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /var/usrlocal/src 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
-    echo "d /run/media 0755 root root -" >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    printf >&1 '%s\n' 'Creating tmpfiles'
+    echo 'd /var/home 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/lib 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/log/journal 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/mnt 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/opt 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/roothome 0700 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/srv 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/bin 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/etc 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/games 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/include 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/lib 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/man 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/sbin 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/share 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /var/usrlocal/src 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
+    echo 'd /run/media 0755 root root -' >> ${OSTREE_SYS_TREE}/usr/lib/tmpfiles.d/ostree-0-integration.conf
 
     # Only retain information about Pacman packages in new rootfs
     mv ${OSTREE_SYS_TREE}/var/lib/pacman ${OSTREE_SYS_TREE}/usr/lib/
     sed -i \
-        -e "s|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g" \
-        -e "s|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g" \
+        -e 's|^#\(DBPath\s*=\s*\).*|\1/usr/lib/pacman|g' \
+        -e 's|^#\(IgnoreGroup\s*=\s*\).*|\1modified|g' \
         ${OSTREE_SYS_TREE}/usr/etc/pacman.conf
 
     # Allow Pacman to store update notice id during unlock mode
@@ -202,8 +202,8 @@ function OSTREE_CREATE_LAYOUT {
 # [OSTREE]: CREATE COMMIT
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
-    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="archlinux/latest" --tree=dir="${OSTREE_SYS_TREE}"
-    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw ${OSTREE_SYS_KARG}" --os="archlinux" ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
+    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch='archlinux/latest' --tree=dir="${OSTREE_SYS_TREE}"
+    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw ${OSTREE_SYS_KARG}" --os='archlinux' ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
 }
 
 # [OSTREE]: UNDO COMMIT
@@ -214,7 +214,7 @@ function OSTREE_REVERT_IMAGE {
 # [BOOTLOADER]: FIRST BOOT
 # | Todo: improve grub-mkconfig
 function BOOTLOADER_CREATE {
-    grub-install --target="x86_64-efi" --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id="archlinux" --removable ${OSTREE_DEV_BOOT}
+    grub-install --target='x86_64-efi' --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id='archlinux' --removable ${OSTREE_DEV_BOOT}
 
     export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/archlinux/deploy/* | head -n 1)
 
@@ -223,18 +223,18 @@ function BOOTLOADER_CREATE {
     mount --mkdir --rbind ${OSTREE_SYS_ROOT}/ostree ${OSTREE_SYS_PATH}/sysroot/ostree
 
     for i in /dev /proc /sys; do mount -o bind $i ${OSTREE_SYS_PATH}${i}; done
-    chroot ${OSTREE_SYS_PATH} /bin/bash -c "grub-mkconfig -o /boot/efi/EFI/grub/grub.cfg"
+    chroot ${OSTREE_SYS_PATH} /bin/bash -c 'grub-mkconfig -o /boot/efi/EFI/grub/grub.cfg'
 
     umount --recursive ${OSTREE_SYS_ROOT}
 }
 
-# [CLI]: TASKS FINECONTROL
+# [CLI]: TASK FINECONTROL
 function CLI_SETUP {
     ARGS=$(getopt \
         --alternative \
         --options='c:,d:,f:,k:,t:,m::,n::' \
         --longoptions='cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::' \
-        --name="$(basename "$0")" \
+        --name="$(basename ${0})" \
         -- "${@}"
     )
 
@@ -331,23 +331,23 @@ function CLI_SETUP {
 
         'help' | *)
             usage=(
-                "Usage:"
-                "  ostree.sh <command> [options]"
-                "Commands:"
-                "  install : (Create deployment) : Partitions, formats and initializes a new OSTree repository."
-                "  upgrade : (Update deployment) : Creates a new OSTree commit."
-                "  revert  : (Update deployment) : Rolls back version 0."
-                "Options:"
-                "  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot"
-                "  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation"
-                "  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment"
-                "  -k, --keymap  string      : (install/upgrade) : TTY keyboard layout for new deployment"
-                "  -t, --time    string      : (install/upgrade) : Update host's timezone for new deployment"
-                "Switches:"
-                "  -m, --merge               : (upgrade)         : Retain contents of /etc for existing deployment"
-                "  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: first deployment will never retain any cache from host)"
-                "      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache"
-                "      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache"
+                'Usage:'
+                '  ostree.sh <command> [options]'
+                'Commands:'
+                '  install : (Create deployment) : Partitions, formats and initializes a new OSTree repository'
+                '  upgrade : (Update deployment) : Creates a new OSTree commit'
+                '  revert  : (Update deployment) : Rolls back version 0'
+                'Options:'
+                '  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot'
+                '  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation'
+                '  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment'
+                '  -k, --keymap  string      : (install/upgrade) : TTY keyboard layout for new deployment'
+                '  -t, --time    string      : (install/upgrade) : Update host timezone for new deployment'
+                'Switches:'
+                '  -m, --merge               : (upgrade)         : Retain contents of /etc for existing deployment'
+                '  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: implied for first deployment)'
+                '      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache'
+                '      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache'
             )
             printf >&1 '%s\n' "${usage[@]}"
         ;;&
