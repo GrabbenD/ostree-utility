@@ -23,7 +23,6 @@ function ENV_CREATE_OPTS {
     export OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:="SYS_HOME"}
     export OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE="--no-merge"}
 
-
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
         timedatectl set-timezone ${SYSTEM_OPT_TIMEZONE}
@@ -31,7 +30,7 @@ function ENV_CREATE_OPTS {
     fi
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:="Etc/UTC"}
     export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:="us"}
-    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/Containerfile.base.archlinux:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
+    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname $0)/archlinux/Containerfile.base:ostree/base,$(dirname $0)/Containerfile.host.example:ostree/host"}
     export PODMAN_OPT_CACHE=${PODMAN_OPT_CACHE="true"}
     export PACMAN_OPT_CACHE=${PACMAN_OPT_CACHE="true"}
 }
