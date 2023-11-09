@@ -230,116 +230,136 @@ function BOOTLOADER_CREATE {
 }
 
 # [CLI]: TASKS FINECONTROL
-argument=${1:-}
+function CLI_SETUP {
+    ARGS=$(getopt \
+        --alternative \
+        --options='c:,d:,f:,k:,t:,m::,n::' \
+        --longoptions='cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::' \
+        --name="$(basename "$0")" \
+        -- "${@}"
+    )
 
-# Options
-while [[ ${#} -gt 1 ]]; do
-    case ${2} in
-        -c|--cmdline)
-            export OSTREE_SYS_KARG=${3}
-            shift 2 # Get value
+    # Rewrite "${@}"
+    eval set -- "${ARGS}"
+
+    # Arguments
+    while [[ ${#} > 0 ]]; do
+        case ${1} in
+            # Options
+
+            '-c' | '--cmdline')
+                export OSTREE_SYS_KARG=${2}
+            ;;
+
+            '-d' | '--dev')
+                export OSTREE_DEV_SCSI=${2}
+            ;;
+
+            '-f' | '--file')
+                export PODMAN_OPT_BUILDFILE=${2}
+            ;;
+
+            '-k' | '--keymap')
+                export SYSTEM_OPT_KEYMAP=${2}
+            ;;
+
+            '-t' | '--time')
+                export SYSTEM_OPT_TIMEZONE=${2}
+            ;;
+
+            # Switches
+
+            '-m' | '--merge')
+                export OSTREE_OPT_NOMERGE=${2:-}
+            ;;
+
+            '-n' | '--no-cache')
+                export PACMAN_OPT_CACHE=${2:-}
+                export PODMAN_OPT_CACHE=${2:-}
+            ;;
+
+            '--no-pacman-cache')
+                export PACMAN_OPT_CACHE=${2:-}
+            ;;
+
+            '--no-podman-cache')
+                export PODMAN_OPT_CACHE=${2:-}
+            ;;
+
+            # Positional inputs (end of options)
+
+            '--')
+                shift 1
+                break
+            ;;
+        esac
+
+        # Continue to the next argument
+        shift 2
+    done
+
+    case ${1:-} in
+        'install')
+            ENV_CREATE_OPTS
+
+            DISK_CREATE_LAYOUT
+            DISK_CREATE_FORMAT
+            DISK_CREATE_MOUNTS
+
+            OSTREE_CREATE_REPO
+            OSTREE_CREATE_ROOTFS
+            OSTREE_CREATE_LAYOUT
+            OSTREE_DEPLOY_IMAGE
+
+            BOOTLOADER_CREATE
         ;;
 
-        -d|--dev)
-            export OSTREE_DEV_SCSI=${3}
-            shift 2 # Get value
+        'upgrade')
+            ENV_VERIFY_LOCAL
+            ENV_CREATE_OPTS
+
+            OSTREE_CREATE_ROOTFS
+            OSTREE_CREATE_LAYOUT
+            OSTREE_DEPLOY_IMAGE
         ;;
 
-        -f|--file)
-            export PODMAN_OPT_BUILDFILE=${3}
-            shift 2 # Get value
+        'revert')
+            ENV_VERIFY_LOCAL
+            ENV_CREATE_OPTS
+
+            OSTREE_REVERT_IMAGE
         ;;
 
-        -k|--keymap)
-            export SYSTEM_OPT_KEYMAP=${3}
-            shift 2 # Get value
-        ;;
-
-        -m|--merge)
-            export OSTREE_OPT_NOMERGE=""
-            shift 1 # Finish
-        ;;
-
-        -n|--no-cache)
-            export PACMAN_OPT_CACHE=""
-            export PODMAN_OPT_CACHE=""
-            shift 1 # Finish
-        ;;
-
-        --no-pacman-cache)
-            export PACMAN_OPT_CACHE=""
-            shift 1 # Finish
-        ;;
-
-        --no-podman-cache)
-            export PODMAN_OPT_CACHE=""
-            shift 1 # Finish
-        ;;
-
-        -t|--time)
-            export SYSTEM_OPT_TIMEZONE=${3}
-            shift 2 # Get value
-        ;;
+        'help' | *)
+            usage=(
+                "Usage:"
+                "  ostree.sh <command> [options]"
+                "Commands:"
+                "  install : (Create deployment) : Partitions, formats and initializes a new OSTree repository."
+                "  upgrade : (Update deployment) : Creates a new OSTree commit."
+                "  revert  : (Update deployment) : Rolls back version 0."
+                "Options:"
+                "  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot"
+                "  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation"
+                "  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment"
+                "  -k, --keymap  string      : (install/upgrade) : TTY keyboard layout for new deployment"
+                "  -t, --time    string      : (install/upgrade) : Update host's timezone for new deployment"
+                "Switches:"
+                "  -m, --merge               : (upgrade)         : Retain contents of /etc for existing deployment"
+                "  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: first deployment will never retain any cache from host)"
+                "      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache"
+                "      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache"
+            )
+            printf >&1 '%s\n' "${usage[@]}"
+        ;;&
 
         *)
-            printf >&2 '%s\n' "Unknown option: ${2}"
-            exit 2
+            if [[ ! ${1:-} == 'help' && -n ${1:-} ]]; then
+                printf >&2 '\n%s\n' "Error: unknown command: ${1:-}"
+                exit 2
+            fi
         ;;
     esac
-done
+}
 
-# Argument
-case ${argument} in
-    install)
-        ENV_CREATE_OPTS
-
-        DISK_CREATE_LAYOUT
-        DISK_CREATE_FORMAT
-        DISK_CREATE_MOUNTS
-
-        OSTREE_CREATE_REPO
-        OSTREE_CREATE_ROOTFS
-        OSTREE_CREATE_LAYOUT
-        OSTREE_DEPLOY_IMAGE
-
-        BOOTLOADER_CREATE
-    ;;
-
-    upgrade)
-        ENV_VERIFY_LOCAL
-        ENV_CREATE_OPTS
-
-        OSTREE_CREATE_ROOTFS
-        OSTREE_CREATE_LAYOUT
-        OSTREE_DEPLOY_IMAGE
-    ;;
-
-    revert)
-        ENV_VERIFY_LOCAL
-        ENV_CREATE_OPTS
-
-        OSTREE_REVERT_IMAGE
-    ;;
-
-    *)
-        help=(
-            "Usage:"
-            "  ostree.sh [command] [options]"
-            "Commands:"
-            "  install : (Create deployment) : Partitions, formats and initializes a new OSTree repository."
-            "  upgrade : (Update deployment) : Creates a new OSTree commit."
-            "  revert  : (Update deployment) : Rolls back version 0."
-            "Options:"
-            "  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot"
-            "  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation."
-            "  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment."
-            "  -k, --keymap  string      : (install/upgrade) : TTY keyboard layout for new deployment."
-            "  -m, --merge               : (upgrade)         : Retain contents of /etc for existing deployment."
-            "  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: first deployment will never retain any cache from host)"
-            "      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache"
-            "      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache"
-            "  -t, --time                : (install/upgrade) : Update host's timezone for new deployment."
-        )
-        printf >&1 '%s\n' "${help[@]}"
-    ;;
-esac
+CLI_SETUP "${@}"
