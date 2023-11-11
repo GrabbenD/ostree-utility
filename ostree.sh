@@ -203,7 +203,7 @@ function OSTREE_CREATE_LAYOUT {
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
     ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch='archlinux/latest' --tree=dir="${OSTREE_SYS_TREE}"
-    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=SYS_ROOT rw ${OSTREE_SYS_KARG}" --os='archlinux' ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
+    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=${OSTREE_SYS_ROOT_LABEL} rw ${OSTREE_SYS_KARG}" --os='archlinux' ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
 }
 
 # [OSTREE]: UNDO COMMIT
