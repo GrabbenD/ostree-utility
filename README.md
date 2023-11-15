@@ -133,7 +133,7 @@ My vision is to build a secure and minimal base system which is resilient agains
 
 6. **Revert to previous commit:**
 
-   To revert the latest deployment _(0)_, boot into the previous configuration _(1)_ and execute:
+   To undo the latest deployment _(0)_; boot into the previous configuration _(1)_ and execute:
 
    ```console
    $ sudo ./ostree.sh revert
