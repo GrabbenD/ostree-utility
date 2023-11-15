@@ -2,10 +2,11 @@
 set -o pipefail # Exit code from last command
 set -e          # Exit on non-zero status
 set -u          # Error on unset variables
-set -x          # Print executed commands
 
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
+    [[ -n ${CLI_QUIET='false'} ]]; set -x # Print executed commands while performing tasks
+
     if [[ ! -d '/ostree' ]]; then
         # Do not touch disks in a booted system:
         declare OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
@@ -234,8 +235,8 @@ function BOOTLOADER_CREATE {
 function CLI_SETUP {
     ARGS=$(getopt \
         --alternative \
-        --options='b:,c:,d:,f:,k:,t:,m::,n::' \
-        --longoptions='base-os:,cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::' \
+        --options='b:,c:,d:,f:,k:,t:,m::,n::,q::' \
+        --longoptions='base-os:,cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::,quiet::' \
         --name="$(basename ${0})" \
         -- "${@}"
     )
@@ -289,6 +290,10 @@ function CLI_SETUP {
 
             '--no-podman-cache')
                 declare PODMAN_OPT_CACHE=${2:-}
+            ;;
+
+            '-q' | '--quiet')
+                declare CLI_QUIET=${2:-}
             ;;
 
             # Positional inputs (end of options)
@@ -355,6 +360,7 @@ function CLI_SETUP {
                 '  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: implied for first deployment)'
                 '      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache'
                 '      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache'
+                '  -q, --quiet               : (install/upgrade) : Reduce verbosity'
             )
             printf >&1 '%s\n' "${usage[@]}"
         ;;&
