@@ -47,7 +47,7 @@ function ENV_CREATE_DEPS {
 # [ENVIRONMENT]: OSTREE CHECK
 function ENV_VERIFY_LOCAL {
     if [[ ! -d '/ostree' ]]; then
-        printf >&2 '\e[31m%s\e[0m\n' 'Error: OSTree could not be found under /ostree'
+        printf >&2 '\e[31m%s\e[0m\n' 'Error: OSTree could not be found in: /ostree'
         exit 1
     fi
 }
