@@ -350,7 +350,7 @@ function CLI_SETUP {
                 '  upgrade : (Update deployment) : Creates a new OSTree commit'
                 '  revert  : (Update deployment) : Rolls back version 0'
                 'Options:'
-                '  -b, --base-os string      : (install/upgrade) : Name of OS to use as a base. Defaults to archlinux'
+                '  -b, --base-os string      : (install/upgrade) : Name of OS to use as a base. Defaults to cachyos'
                 '  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot'
                 '  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation'
                 '  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment'
