@@ -30,7 +30,8 @@ function ENV_CREATE_OPTS {
     fi
     export SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
     export SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
-    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/archlinux/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
+    export SYSTEM_BASE_NAME=${SYSTEM_BASE_NAME:='archlinux'}
+    export PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/${SYSTEM_BASE_NAME}/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
     export PODMAN_OPT_CACHE=${PODMAN_OPT_CACHE='true'}
     export PACMAN_OPT_CACHE=${PACMAN_OPT_CACHE='true'}
 }
@@ -81,7 +82,7 @@ function DISK_CREATE_MOUNTS {
 function OSTREE_CREATE_REPO {
     ENV_CREATE_DEPS ostree wget which
     ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
-    ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" archlinux
+    ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" ${SYSTEM_BASE_NAME}
     ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode='bare'
     ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix 'true'
 }
@@ -195,15 +196,15 @@ function OSTREE_CREATE_LAYOUT {
     # Allow Pacman to store update notice id during unlock mode
     mkdir ${OSTREE_SYS_TREE}/usr/lib/pacmanlocal
 
-    # OSTree mounts /ostree/deploy/archlinux/var to /var
+    # OSTree mounts /ostree/deploy/${SYSTEM_BASE_NAME}/var to /var
     rm -r ${OSTREE_SYS_TREE}/var/*
 }
 
 # [OSTREE]: CREATE COMMIT
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
-    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch='archlinux/latest' --tree=dir="${OSTREE_SYS_TREE}"
-    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=${OSTREE_SYS_ROOT_LABEL} rw ${OSTREE_SYS_KARG}" --os='archlinux' ${OSTREE_OPT_NOMERGE} --retain archlinux/latest
+    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="${SYSTEM_BASE_NAME}/latest" --tree=dir="${OSTREE_SYS_TREE}"
+    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=${OSTREE_SYS_ROOT_LABEL} rw ${OSTREE_SYS_KARG}" --os="${SYSTEM_BASE_NAME}" ${OSTREE_OPT_NOMERGE} --retain ${SYSTEM_BASE_NAME}/latest
 }
 
 # [OSTREE]: UNDO COMMIT
@@ -214,9 +215,9 @@ function OSTREE_REVERT_IMAGE {
 # [BOOTLOADER]: FIRST BOOT
 # | Todo: improve grub-mkconfig
 function BOOTLOADER_CREATE {
-    grub-install --target='x86_64-efi' --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id='archlinux' --removable ${OSTREE_DEV_BOOT}
+    grub-install --target='x86_64-efi' --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id="${SYSTEM_BASE_NAME}" --removable ${OSTREE_DEV_BOOT}
 
-    export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/archlinux/deploy/* | head -n 1)
+    export OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/${SYSTEM_BASE_NAME}/deploy/* | head -n 1)
 
     rm -rfv ${OSTREE_SYS_PATH}/boot/*
     mount --mkdir --rbind ${OSTREE_SYS_ROOT}/boot ${OSTREE_SYS_PATH}/boot
@@ -232,8 +233,8 @@ function BOOTLOADER_CREATE {
 function CLI_SETUP {
     ARGS=$(getopt \
         --alternative \
-        --options='c:,d:,f:,k:,t:,m::,n::' \
-        --longoptions='cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::' \
+        --options='b:,c:,d:,f:,k:,t:,m::,n::' \
+        --longoptions='base-os:,cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::' \
         --name="$(basename ${0})" \
         -- "${@}"
     )
@@ -245,6 +246,10 @@ function CLI_SETUP {
     while [[ ${#} > 0 ]]; do
         case ${1} in
             # Options
+
+            '-b' | '--base-os')
+                export SYSTEM_BASE_NAME=${2}
+            ;;
 
             '-c' | '--cmdline')
                 export OSTREE_SYS_KARG=${2}
@@ -338,6 +343,7 @@ function CLI_SETUP {
                 '  upgrade : (Update deployment) : Creates a new OSTree commit'
                 '  revert  : (Update deployment) : Rolls back version 0'
                 'Options:'
+                '  -b, --base-os string      : (install/upgrade) : Name of OS to use as a base. Defaults to archlinux'
                 '  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot'
                 '  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation'
                 '  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment'
