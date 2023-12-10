@@ -35,7 +35,7 @@ function ENV_CREATE_OPTS {
     declare SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
     declare SYSTEM_BASE_NAME=${SYSTEM_BASE_NAME:='archlinux'}
 
-    declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/${SYSTEM_BASE_NAME}/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
+    declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/archlinux/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
     declare PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
     declare PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
 }
