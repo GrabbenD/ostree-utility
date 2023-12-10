@@ -6,7 +6,7 @@ set -o nounset   # Error on unset variables
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
     if [[ ${CLI_QUIET:-} != 1 ]]; then
-        set -x # Print executed commands while performing tasks
+        set -o xtrace # Print executed commands while performing tasks
     fi
 
     if [[ ! -d '/ostree' ]]; then
