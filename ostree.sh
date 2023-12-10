@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-set -o pipefail # Exit code from last command
-set -o errexit  # Exit on non-zero status
-set -o nounset  # Error on unset variables
+#set -o pipefail # Exit code from last command
+set -o errexit   # Exit on non-zero status
+set -o nounset   # Error on unset variables
 
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
