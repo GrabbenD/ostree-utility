@@ -35,7 +35,7 @@ function ENV_CREATE_OPTS {
     declare SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
     declare SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
 
-    declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/archlinux/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
+    declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="${0%/*}/archlinux/Containerfile.base:ostree/base","${0%/*}/Containerfile.host.example:ostree/host"}
     declare PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
     declare PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
 }
@@ -240,7 +240,7 @@ function CLI_SETUP {
         --alternative \
         --options='b:,c:,d:,f:,k:,t:,m::,n::,q::' \
         --longoptions='base-os:,cmdline:,dev:,file:,keymap:,time:,merge::,no-cache::,no-pacman-cache::,no-podman-cache::,quiet::' \
-        --name="$(basename ${0})" \
+        --name="${0##*/}" \
         -- "${@}"
     )
 
