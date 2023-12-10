@@ -131,6 +131,7 @@ function OSTREE_CREATE_ROOTFS {
             ${PODMAN_OPT_BUILD[@]} \
             --file="${PODMAN_OPT_IMG}" \
             --tag="${PODMAN_OPT_TAG}" \
+            --cap-add='SYS_ADMIN' \
             --build-arg="OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL}" \
             --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
             --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
