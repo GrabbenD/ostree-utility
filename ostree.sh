@@ -86,7 +86,7 @@ function OSTREE_CREATE_REPO {
     ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" ${SYSTEM_BASE_NAME}
     ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode='bare'
-    ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix 'true'
+    ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix 1
 }
 
 # [OSTREE]: BUILD ROOTFS
@@ -116,7 +116,7 @@ function OSTREE_CREATE_ROOTFS {
     if [[ ! -n ${PODMAN_OPT_CACHE:-} ]]; then
         local PODMAN_OPT_BUILD=(
             ${PODMAN_OPT_BUILD[@]}
-            --no-cache='true'
+            --no-cache='1'
         )
     fi
 
