@@ -25,6 +25,7 @@ function ENV_CREATE_OPTS {
     declare OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:='SYS_ROOT'}
     declare OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:='SYS_HOME'}
     declare OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE='--no-merge'}
+    declare OSTREE_REP_NAME=${OSTREE_REP_NAME:='archlinux'}
 
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
@@ -33,7 +34,6 @@ function ENV_CREATE_OPTS {
     fi
     declare SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
     declare SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
-    declare SYSTEM_BASE_NAME=${SYSTEM_BASE_NAME:='archlinux'}
 
     declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="$(dirname ${0})/archlinux/Containerfile.base:ostree/base,$(dirname ${0})/Containerfile.host.example:ostree/host"}
     declare PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
@@ -87,7 +87,7 @@ function DISK_CREATE_MOUNTS {
 function OSTREE_CREATE_REPO {
     ENV_CREATE_DEPS ostree wget which
     ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
-    ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" ${SYSTEM_BASE_NAME}
+    ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" ${OSTREE_REP_NAME}
     ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode='bare'
     ostree config --repo="${OSTREE_SYS_ROOT}/ostree/repo" set sysroot.bootprefix 1
 }
@@ -201,15 +201,15 @@ function OSTREE_CREATE_LAYOUT {
     # Allow Pacman to store update notice id during unlock mode
     mkdir ${OSTREE_SYS_TREE}/usr/lib/pacmanlocal
 
-    # OSTree mounts /ostree/deploy/${SYSTEM_BASE_NAME}/var to /var
+    # OSTree mounts /ostree/deploy/${OSTREE_REP_NAME}/var to /var
     rm -r ${OSTREE_SYS_TREE}/var/*
 }
 
 # [OSTREE]: CREATE COMMIT
 function OSTREE_DEPLOY_IMAGE {
     # Update repository and boot entries in GRUB2
-    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="${SYSTEM_BASE_NAME}/latest" --tree=dir="${OSTREE_SYS_TREE}"
-    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=${OSTREE_SYS_ROOT_LABEL} rw ${OSTREE_SYS_KARG}" --os="${SYSTEM_BASE_NAME}" ${OSTREE_OPT_NOMERGE} --retain ${SYSTEM_BASE_NAME}/latest
+    ostree commit --repo="${OSTREE_SYS_ROOT}/ostree/repo" --branch="${OSTREE_REP_NAME}/latest" --tree=dir="${OSTREE_SYS_TREE}"
+    ostree admin deploy --sysroot="${OSTREE_SYS_ROOT}" --karg="root=LABEL=${OSTREE_SYS_ROOT_LABEL} rw ${OSTREE_SYS_KARG}" --os="${OSTREE_REP_NAME}" ${OSTREE_OPT_NOMERGE} --retain ${OSTREE_REP_NAME}/latest
 }
 
 # [OSTREE]: UNDO COMMIT
@@ -220,9 +220,9 @@ function OSTREE_REVERT_IMAGE {
 # [BOOTLOADER]: FIRST BOOT
 # | Todo: improve grub-mkconfig
 function BOOTLOADER_CREATE {
-    grub-install --target='x86_64-efi' --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id="${SYSTEM_BASE_NAME}" --removable ${OSTREE_DEV_BOOT}
+    grub-install --target='x86_64-efi' --efi-directory="${OSTREE_SYS_ROOT}/boot/efi" --boot-directory="${OSTREE_SYS_ROOT}/boot/efi/EFI" --bootloader-id="${OSTREE_REP_NAME}" --removable ${OSTREE_DEV_BOOT}
 
-    local OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/${SYSTEM_BASE_NAME}/deploy/* | head -n 1)
+    local OSTREE_SYS_PATH=$(ls -d ${OSTREE_SYS_ROOT}/ostree/deploy/${OSTREE_REP_NAME}/deploy/* | head -n 1)
 
     rm -rfv ${OSTREE_SYS_PATH}/boot/*
     mount --mkdir --rbind ${OSTREE_SYS_ROOT}/boot ${OSTREE_SYS_PATH}/boot
@@ -255,7 +255,7 @@ function CLI_SETUP {
         # Options
         case ${CLI_ARG} in
             '-b' | '--base-os')
-                declare SYSTEM_BASE_NAME=${CLI_VAL}
+                declare OSTREE_REP_NAME=${CLI_VAL}
             ;;
 
             '-c' | '--cmdline')
