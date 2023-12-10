@@ -27,7 +27,7 @@ function ENV_CREATE_OPTS {
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
         timedatectl set-timezone ${SYSTEM_OPT_TIMEZONE}
-        timedatectl set-ntp true
+        timedatectl set-ntp 1
     fi
     declare SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
     declare SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
