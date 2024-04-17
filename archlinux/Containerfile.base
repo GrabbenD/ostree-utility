@@ -6,13 +6,13 @@
 FROM docker.io/archlinux/archlinux:latest AS rootfs
 
 # Build in chroot to correctly execute hooks, this uses host's Pacman
-RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/pacman/trunk/pacman.conf -o /etc/pacman.conf && \
-    pacman --noconfirm --sync --needed --refresh archlinux-keyring
+RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/pacman/trunk/pacman.conf -o /etc/pacman.conf \
+ && pacman --noconfirm --sync --needed --refresh archlinux-keyring
 
 # Perform a clean system installation with latest Arch Linux packages in chroot to correctly execute hooks, this uses host's Pacman
-RUN pacman --noconfirm --sync --needed arch-install-scripts && \
-    pacstrap -K -P /mnt base && \
-    cp -av /etc/pacman.d/ /mnt/etc/
+RUN pacman --noconfirm --sync --needed arch-install-scripts \
+ && pacstrap -K -P /mnt base \
+ && cp -av /etc/pacman.d/ /mnt/etc/
 
 # |
 # | BASE
@@ -24,13 +24,13 @@ COPY --from=rootfs /mnt /
 
 # Clock
 ARG SYSTEM_OPT_TIMEZONE
-RUN ln -sf /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
+RUN ln --symbolic --force /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
 
 # Keymap hook
 ARG SYSTEM_OPT_KEYMAP
 RUN echo "KEYMAP=${SYSTEM_OPT_KEYMAP}" > /etc/vconsole.conf
 
 # Language
-RUN echo "LANG=en_US.UTF-8" > /etc/locale.conf && \
-    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen
+RUN echo "LANG=en_US.UTF-8" > /etc/locale.conf \
+ && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+ && locale-gen
