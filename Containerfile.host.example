@@ -3,7 +3,7 @@
 ## |
 
 # Customize your system here
-FROM localhost/ostree/base AS host
+FROM localhost/ostree/base:latest AS host
 
 # Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
 RUN mkdir -p /etc/mkinitcpio.conf.d && \

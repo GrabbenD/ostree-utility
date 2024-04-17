@@ -3,7 +3,7 @@
 # |
 
 # Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
-FROM docker.io/library/archlinux AS rootfs
+FROM docker.io/archlinux/archlinux:latest AS rootfs
 
 # Build in chroot to correctly execute hooks, this uses host's Pacman
 RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/pacman/trunk/pacman.conf -o /etc/pacman.conf && \

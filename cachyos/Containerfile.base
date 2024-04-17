@@ -3,7 +3,7 @@
 # |
 
 # Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
-FROM docker.io/library/archlinux AS rootfs
+FROM docker.io/archlinux/archlinux:latest AS rootfs
 
 # Generate a GPG secret key for signing and import CachyOS keys
 RUN pacman-key --init && \
