@@ -156,6 +156,5 @@ $ ostree admin unlock
 Your persistent cache is out of sync with upstream, this can be resolved with:
 
 ```console
-$ ./ostree.sh upgrade --no-cache
+$ ./ostree.sh upgrade --no-podman-cache
 ```
-

@@ -14,10 +14,10 @@ RUN pacman-key --init && \
 COPY etc/pacman.conf /etc/
 RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist && \
     curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-v3-mirrorlist/cachyos-v3-mirrorlist -o /etc/pacman.d/cachyos-v3-mirrorlist && \
-    pacman --noconfirm --needed -Sy cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks
+    pacman --noconfirm --sync --needed --refresh archlinux-keyring cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks
 
 # Perform a clean system installation with latest CachyOS packages in chroot to correctly execute hooks, this uses host's Pacman
-RUN pacman --noconfirm -S arch-install-scripts && \
+RUN pacman --noconfirm --sync --needed arch-install-scripts && \
     pacstrap -K -P /mnt base && \
     cp -av /etc/pacman.d/ /mnt/etc/
 

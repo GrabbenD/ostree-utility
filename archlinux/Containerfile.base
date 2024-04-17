@@ -7,6 +7,10 @@ FROM docker.io/library/archlinux AS rootfs
 
 # Build in chroot to correctly execute hooks, this uses host's Pacman
 RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/pacman/trunk/pacman.conf -o /etc/pacman.conf && \
+    pacman --noconfirm --sync --needed --refresh archlinux-keyring
+
+# Perform a clean system installation with latest Arch Linux packages in chroot to correctly execute hooks, this uses host's Pacman
+RUN pacman --noconfirm --sync --needed arch-install-scripts && \
     pacstrap -K -P /mnt base && \
     cp -av /etc/pacman.d/ /mnt/etc/
 
