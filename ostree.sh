@@ -52,7 +52,7 @@ function ENV_VERIFY_LOCAL {
 # [ENVIRONMENT]: BUILD DEPENDENCIES
 function ENV_CREATE_DEPS {
     # Skip in OSTree as filesystem is read-only
-    if ENV_VERIFY_LOCAL 2>/dev/null; then
+    if ! ENV_VERIFY_LOCAL 2>/dev/null; then
         pacman --noconfirm --sync --needed $@
     fi
 }
