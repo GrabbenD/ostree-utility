@@ -368,8 +368,8 @@ function CLI_SETUP {
 
                 *)
                     if [[ ${CLI_VAL} != 'help' && -n ${CLI_VAL} ]]; then
-                        printf >&2 '\n\e[31m%s\e[0m\n' "Error: unknown command: '${CLI_VAL}'"
-                        exit 2
+                        printf >&2 '\n%s\n' "${0##*/}: unrecognized command '${CLI_VAL}'"
+                        exit 127
                     fi
                 ;;
             esac
