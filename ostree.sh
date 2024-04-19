@@ -40,19 +40,20 @@ function ENV_CREATE_OPTS {
     declare PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
 }
 
-# [ENVIRONMENT]: BUILD DEPENDENCIES
-function ENV_CREATE_DEPS {
-    # Skip in OSTree as filesystem is read-only
-    if [[ $(grep -L 'ostree' '/proc/cmdline') ]]; then
-        pacman --noconfirm --needed -S $@
-    fi
-}
 
 # [ENVIRONMENT]: OSTREE CHECK
 function ENV_VERIFY_LOCAL {
     if [[ ! -d '/ostree' ]]; then
-        printf >&2 '\e[31m%s\e[0m\n' 'Error: OSTree could not be found in: /ostree'
-        exit 1
+        printf >&2 '\e[31m%s\e[0m\n' 'OSTree could not be found in: /ostree'
+        return 1
+    fi
+}
+
+# [ENVIRONMENT]: BUILD DEPENDENCIES
+function ENV_CREATE_DEPS {
+    # Skip in OSTree as filesystem is read-only
+    if ENV_VERIFY_LOCAL 2>/dev/null; then
+        pacman --noconfirm --sync --needed $@
     fi
 }
 
@@ -325,7 +326,7 @@ function CLI_SETUP {
                 ;;
 
                 'upgrade')
-                    ENV_VERIFY_LOCAL
+                    ENV_VERIFY_LOCAL || exit $?
                     ENV_CREATE_OPTS
 
                     OSTREE_CREATE_ROOTFS
@@ -334,7 +335,7 @@ function CLI_SETUP {
                 ;;
 
                 'revert')
-                    ENV_VERIFY_LOCAL
+                    ENV_VERIFY_LOCAL || exit $?
                     ENV_CREATE_OPTS
 
                     OSTREE_REVERT_IMAGE
