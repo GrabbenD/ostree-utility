@@ -11,33 +11,33 @@ function ENV_CREATE_OPTS {
 
     if [[ ! -d '/ostree' ]]; then
         # Do not touch disks in a booted system:
-        declare OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
-        declare OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
-        declare OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
-        declare OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
-        declare OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/tmp/chroot'}
+        declare -g OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
+        declare -g OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
+        declare -g OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
+        declare -g OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
+        declare -g OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/tmp/chroot'}
     fi
 
-    declare OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/'}
-    declare OSTREE_SYS_TREE=${OSTREE_SYS_TREE:='/tmp/rootfs'}
-    declare OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=''}
-    declare OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:='SYS_BOOT'}
-    declare OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:='SYS_ROOT'}
-    declare OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:='SYS_HOME'}
-    declare OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE='--no-merge'}
-    declare OSTREE_REP_NAME=${OSTREE_REP_NAME:='archlinux'}
+    declare -g OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/'}
+    declare -g OSTREE_SYS_TREE=${OSTREE_SYS_TREE:='/tmp/rootfs'}
+    declare -g OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=''}
+    declare -g OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:='SYS_BOOT'}
+    declare -g OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:='SYS_ROOT'}
+    declare -g OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:='SYS_HOME'}
+    declare -g OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE='--no-merge'}
+    declare -g OSTREE_REP_NAME=${OSTREE_REP_NAME:='archlinux'}
 
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
         timedatectl set-timezone ${SYSTEM_OPT_TIMEZONE}
         timedatectl set-ntp 1
     fi
-    declare SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
-    declare SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
+    declare -g SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
+    declare -g SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
 
-    declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="${0%/*}/archlinux/Containerfile.base:ostree/base","${0%/*}/Containerfile.host.example:ostree/host"}
-    declare PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
-    declare PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
+    declare -g PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="${0%/*}/archlinux/Containerfile.base:ostree/base","${0%/*}/Containerfile.host.example:ostree/host"}
+    declare -g PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
+    declare -g PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
 }
 
 
@@ -257,27 +257,27 @@ function CLI_SETUP {
         # Options
         case ${CLI_ARG} in
             '-b' | '--base-os')
-                declare OSTREE_REP_NAME=${CLI_VAL}
+                declare -g OSTREE_REP_NAME=${CLI_VAL}
             ;;
 
             '-c' | '--cmdline')
-                declare OSTREE_SYS_KARG=${CLI_VAL}
+                declare -g OSTREE_SYS_KARG=${CLI_VAL}
             ;;
 
             '-d' | '--dev')
-                declare OSTREE_DEV_SCSI=${CLI_VAL}
+                declare -g OSTREE_DEV_SCSI=${CLI_VAL}
             ;;
 
             '-f' | '--file')
-                declare PODMAN_OPT_BUILDFILE=${CLI_VAL}
+                declare -g PODMAN_OPT_BUILDFILE=${CLI_VAL}
             ;;
 
             '-k' | '--keymap')
-                declare SYSTEM_OPT_KEYMAP=${CLI_VAL}
+                declare -g SYSTEM_OPT_KEYMAP=${CLI_VAL}
             ;;
 
             '-t' | '--time')
-                declare SYSTEM_OPT_TIMEZONE=${CLI_VAL}
+                declare -g SYSTEM_OPT_TIMEZONE=${CLI_VAL}
             ;;
         esac
 
@@ -286,24 +286,24 @@ function CLI_SETUP {
         [[ ${CLI_VAL@L} == 'false' ]] && CLI_VAL='0'
         case ${CLI_ARG} in
             '-m' | '--merge')
-                declare OSTREE_OPT_NOMERGE=${CLI_VAL:-}
+                declare -g OSTREE_OPT_NOMERGE=${CLI_VAL:-}
             ;;
 
             '-n' | '--no-cache')
-                declare PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
-                declare PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
             ;;
 
             '--no-pacman-cache')
-                declare PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
             ;;
 
             '--no-podman-cache')
-                declare PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
             ;;
 
             '-q' | '--quiet')
-                declare CLI_QUIET=${CLI_VAL:-1}
+                declare -g CLI_QUIET=${CLI_VAL:-1}
             ;;
         esac
 
