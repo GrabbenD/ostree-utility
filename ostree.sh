@@ -96,9 +96,9 @@ function OSTREE_CREATE_REPO {
 # [OSTREE]: BUILD ROOTFS
 function OSTREE_CREATE_ROOTFS {
     # Add support for overlay storage driver in LiveCD
-    if [[ $(df --output=fstype / | tail -n 1) = 'overlay' ]]; then
+    if [[ $(df --output=fstype / | tail --lines 1) = 'overlay' ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
-        local TMPDIR='/tmp/podman'
+        declare -x TMPDIR='/tmp/podman'
         local PODMAN_OPT_GLOBAL=(
             --root="${TMPDIR}/storage"
             --tmpdir="${TMPDIR}/tmp"
