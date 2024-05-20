@@ -110,9 +110,9 @@ function OSTREE_CREATE_ROOTFS {
 
     # Copy Pacman package cache into /var by default (to avoid duplication)
     if [[ ${PACMAN_OPT_NOCACHE} == 0 ]]; then
-        mkdir -p /var/cache/pacman
+        mkdir -p "${TMPDIR:-}/var/cache/pacman"
         local PODMAN_OPT_BUILD=(
-            --volume='/var/cache/pacman:/var/cache/pacman'
+            --volume="${TMPDIR:-}/var/cache/pacman:${TMPDIR:-}/var/cache/pacman"
         )
     fi
 
