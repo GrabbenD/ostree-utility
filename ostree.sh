@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-#set -o pipefail # Exit code from last command
-set -o errexit   # Exit on non-zero status
-set -o nounset   # Error on unset variables
+set -o errexit # Exit on non-zero status
+set -o nounset # Error on unset variables
 
 # [ENVIRONMENT]: OVERRIDE DEFAULTS
 function ENV_CREATE_OPTS {
@@ -11,48 +10,49 @@ function ENV_CREATE_OPTS {
 
     if [[ ! -d '/ostree' ]]; then
         # Do not touch disks in a booted system:
-        declare OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
-        declare OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
-        declare OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
-        declare OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
-        declare OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/tmp/chroot'}
+        declare -g OSTREE_DEV_DISK=${OSTREE_DEV_DISK:="/dev/disk/by-id/${OSTREE_DEV_SCSI}"}
+        declare -g OSTREE_DEV_BOOT=${OSTREE_DEV_BOOT:="${OSTREE_DEV_DISK}-part1"}
+        declare -g OSTREE_DEV_ROOT=${OSTREE_DEV_ROOT:="${OSTREE_DEV_DISK}-part2"}
+        declare -g OSTREE_DEV_HOME=${OSTREE_DEV_HOME:="${OSTREE_DEV_DISK}-part3"}
+        declare -g OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/tmp/chroot'}
     fi
 
-    declare OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/'}
-    declare OSTREE_SYS_TREE=${OSTREE_SYS_TREE:='/tmp/rootfs'}
-    declare OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=''}
-    declare OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:='SYS_BOOT'}
-    declare OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:='SYS_ROOT'}
-    declare OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:='SYS_HOME'}
-    declare OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE='--no-merge'}
-    declare OSTREE_REP_NAME=${OSTREE_REP_NAME:='archlinux'}
+    declare -g OSTREE_SYS_ROOT=${OSTREE_SYS_ROOT:='/'}
+    declare -g OSTREE_SYS_TREE=${OSTREE_SYS_TREE:='/tmp/rootfs'}
+    declare -g OSTREE_SYS_KARG=${OSTREE_SYS_KARG:=''}
+    declare -g OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL:='SYS_BOOT'}
+    declare -g OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL:='SYS_ROOT'}
+    declare -g OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL:='SYS_HOME'}
+    declare -g OSTREE_OPT_NOMERGE=${OSTREE_OPT_NOMERGE='--no-merge'}
+    declare -g OSTREE_REP_NAME=${OSTREE_REP_NAME:='archlinux'}
 
     if [[ -n ${SYSTEM_OPT_TIMEZONE:-} ]]; then
         # Do not modify host's time unless explicitly specified
         timedatectl set-timezone ${SYSTEM_OPT_TIMEZONE}
         timedatectl set-ntp 1
     fi
-    declare SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
-    declare SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
+    declare -g SYSTEM_OPT_TIMEZONE=${SYSTEM_OPT_TIMEZONE:='Etc/UTC'}
+    declare -g SYSTEM_OPT_KEYMAP=${SYSTEM_OPT_KEYMAP:='us'}
 
-    declare PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="${0%/*}/archlinux/Containerfile.base:ostree/base","${0%/*}/Containerfile.host.example:ostree/host"}
-    declare PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
-    declare PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
+    declare -g PODMAN_OPT_BUILDFILE=${PODMAN_OPT_BUILDFILE:="${0%/*}/archlinux/Containerfile.base:ostree/base","${0%/*}/Containerfile.host.example:ostree/host"}
+    declare -g PODMAN_OPT_NOCACHE=${PODMAN_OPT_NOCACHE:='0'}
+    declare -g PACMAN_OPT_NOCACHE=${PACMAN_OPT_NOCACHE:='0'}
+}
+
+
+# [ENVIRONMENT]: OSTREE CHECK
+function ENV_VERIFY_LOCAL {
+    if [[ ! -d '/ostree' ]]; then
+        printf >&2 '\e[31m%s\e[0m\n' 'OSTree could not be found in: /ostree'
+        return 1
+    fi
 }
 
 # [ENVIRONMENT]: BUILD DEPENDENCIES
 function ENV_CREATE_DEPS {
     # Skip in OSTree as filesystem is read-only
-    if [[ $(grep -L 'ostree' '/proc/cmdline') ]]; then
-        pacman --noconfirm --needed -S $@
-    fi
-}
-
-# [ENVIRONMENT]: OSTREE CHECK
-function ENV_VERIFY_LOCAL {
-    if [[ ! -d '/ostree' ]]; then
-        printf >&2 '\e[31m%s\e[0m\n' 'Error: OSTree could not be found in: /ostree'
-        exit 1
+    if ! ENV_VERIFY_LOCAL 2>/dev/null; then
+        pacman --noconfirm --sync --needed $@
     fi
 }
 
@@ -85,7 +85,7 @@ function DISK_CREATE_MOUNTS {
 
 # [OSTREE]: FIRST INITIALIZATION
 function OSTREE_CREATE_REPO {
-    ENV_CREATE_DEPS ostree wget which
+    ENV_CREATE_DEPS ostree which
     ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" ${OSTREE_REP_NAME}
     ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode='bare'
@@ -95,9 +95,9 @@ function OSTREE_CREATE_REPO {
 # [OSTREE]: BUILD ROOTFS
 function OSTREE_CREATE_ROOTFS {
     # Add support for overlay storage driver in LiveCD
-    if [[ $(df --output=fstype / | tail -n 1) = 'overlay' ]]; then
+    if [[ $(df --output=fstype / | tail --lines 1) = 'overlay' ]]; then
         ENV_CREATE_DEPS fuse-overlayfs
-        local TMPDIR='/tmp/podman'
+        declare -x TMPDIR='/tmp/podman'
         local PODMAN_OPT_GLOBAL=(
             --root="${TMPDIR}/storage"
             --tmpdir="${TMPDIR}/tmp"
@@ -109,9 +109,9 @@ function OSTREE_CREATE_ROOTFS {
 
     # Copy Pacman package cache into /var by default (to avoid duplication)
     if [[ ${PACMAN_OPT_NOCACHE} == 0 ]]; then
-        mkdir -p /var/cache/pacman
+        mkdir -p "${TMPDIR:-}/var/cache/pacman"
         local PODMAN_OPT_BUILD=(
-            --volume='/var/cache/pacman:/var/cache/pacman'
+            --volume="${TMPDIR:-}/var/cache/pacman:${TMPDIR:-}/var/cache/pacman"
         )
     fi
 
@@ -131,6 +131,7 @@ function OSTREE_CREATE_ROOTFS {
             ${PODMAN_OPT_BUILD[@]} \
             --file="${PODMAN_OPT_IMG}" \
             --tag="${PODMAN_OPT_TAG}" \
+            --cap-add='SYS_ADMIN' \
             --build-arg="OSTREE_SYS_BOOT_LABEL=${OSTREE_SYS_BOOT_LABEL}" \
             --build-arg="OSTREE_SYS_HOME_LABEL=${OSTREE_SYS_HOME_LABEL}" \
             --build-arg="OSTREE_SYS_ROOT_LABEL=${OSTREE_SYS_ROOT_LABEL}" \
@@ -255,27 +256,27 @@ function CLI_SETUP {
         # Options
         case ${CLI_ARG} in
             '-b' | '--base-os')
-                declare OSTREE_REP_NAME=${CLI_VAL}
+                declare -g OSTREE_REP_NAME=${CLI_VAL}
             ;;
 
             '-c' | '--cmdline')
-                declare OSTREE_SYS_KARG=${CLI_VAL}
+                declare -g OSTREE_SYS_KARG=${CLI_VAL}
             ;;
 
             '-d' | '--dev')
-                declare OSTREE_DEV_SCSI=${CLI_VAL}
+                declare -g OSTREE_DEV_SCSI=${CLI_VAL}
             ;;
 
             '-f' | '--file')
-                declare PODMAN_OPT_BUILDFILE=${CLI_VAL}
+                declare -g PODMAN_OPT_BUILDFILE=${CLI_VAL}
             ;;
 
             '-k' | '--keymap')
-                declare SYSTEM_OPT_KEYMAP=${CLI_VAL}
+                declare -g SYSTEM_OPT_KEYMAP=${CLI_VAL}
             ;;
 
             '-t' | '--time')
-                declare SYSTEM_OPT_TIMEZONE=${CLI_VAL}
+                declare -g SYSTEM_OPT_TIMEZONE=${CLI_VAL}
             ;;
         esac
 
@@ -284,24 +285,24 @@ function CLI_SETUP {
         [[ ${CLI_VAL@L} == 'false' ]] && CLI_VAL='0'
         case ${CLI_ARG} in
             '-m' | '--merge')
-                declare OSTREE_OPT_NOMERGE=${CLI_VAL:-}
+                declare -g OSTREE_OPT_NOMERGE=${CLI_VAL:-}
             ;;
 
             '-n' | '--no-cache')
-                declare PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
-                declare PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
             ;;
 
             '--no-pacman-cache')
-                declare PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PACMAN_OPT_NOCACHE=${CLI_VAL:-1}
             ;;
 
             '--no-podman-cache')
-                declare PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
+                declare -g PODMAN_OPT_NOCACHE=${CLI_VAL:-1}
             ;;
 
             '-q' | '--quiet')
-                declare CLI_QUIET=${CLI_VAL:-1}
+                declare -g CLI_QUIET=${CLI_VAL:-1}
             ;;
         esac
 
@@ -324,7 +325,7 @@ function CLI_SETUP {
                 ;;
 
                 'upgrade')
-                    ENV_VERIFY_LOCAL
+                    ENV_VERIFY_LOCAL || exit $?
                     ENV_CREATE_OPTS
 
                     OSTREE_CREATE_ROOTFS
@@ -333,7 +334,7 @@ function CLI_SETUP {
                 ;;
 
                 'revert')
-                    ENV_VERIFY_LOCAL
+                    ENV_VERIFY_LOCAL || exit $?
                     ENV_CREATE_OPTS
 
                     OSTREE_REVERT_IMAGE
@@ -350,12 +351,12 @@ function CLI_SETUP {
                         'Options:'
                         '  -b, --base-os string      : (install/upgrade) : Name of OS to use as a base. Defaults to archlinux'
                         '  -c, --cmdline string      : (install/upgrade) : List of kernel arguments for boot'
-                        '  -d, --dev     string      : (install)         : Device SCSI (ID-LINK) for new installation'
+                        '  -d, --dev     string      : (install        ) : Device SCSI (ID-LINK) for new installation'
                         '  -f, --file    stringArray : (install/upgrade) : Containerfile(s) for new deployment'
                         '  -k, --keymap  string      : (install/upgrade) : TTY keyboard layout for new deployment'
                         '  -t, --time    string      : (install/upgrade) : Update host timezone for new deployment'
                         'Switches:'
-                        '  -m, --merge               : (upgrade)         : Retain contents of /etc for existing deployment'
+                        '  -m, --merge               : (        upgrade) : Retain contents of /etc for existing deployment'
                         '  -n, --no-cache            : (install/upgrade) : Skip any cached data (note: implied for first deployment)'
                         '      --no-pacman-cache     : (install/upgrade) : Skip Pacman package cache'
                         '      --no-podman-cache     : (install/upgrade) : Skip Podman layer cache'
@@ -366,8 +367,8 @@ function CLI_SETUP {
 
                 *)
                     if [[ ${CLI_VAL} != 'help' && -n ${CLI_VAL} ]]; then
-                        printf >&2 '\n\e[31m%s\e[0m\n' "Error: unknown command: '${CLI_VAL}'"
-                        exit 2
+                        printf >&2 '\n%s\n' "${0##*/}: unrecognized command '${CLI_VAL}'"
+                        exit 127
                     fi
                 ;;
             esac

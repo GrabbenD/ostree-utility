@@ -1,66 +1,36 @@
-## |
-## | BASE INSTALLATION
-## |
+# |
+# | ROOTFS
+# |
+
+# Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
+FROM docker.io/archlinux/archlinux:latest AS rootfs
+
+# Build in chroot to correctly execute hooks, this uses host's Pacman
+RUN curl https://raw.githubusercontent.com/archlinux/svntogit-packages/packages/pacman/trunk/pacman.conf -o /etc/pacman.conf \
+ && pacman --noconfirm --sync --needed --refresh archlinux-keyring
+
+# Perform a clean system installation with latest Arch Linux packages in chroot to correctly execute hooks, this uses host's Pacman
+RUN pacman --noconfirm --sync --needed arch-install-scripts \
+ && pacstrap -K -P /mnt base \
+ && cp -av /etc/pacman.d/ /mnt/etc/
+
+# |
+# | BASE
+# |
 
 # Reusable base template
-FROM docker.io/library/archlinux AS base
-
-# Remove container specific storage optimization in Pacman
-RUN sed -i -e "s|^NoExtract.*||g" /etc/pacman.conf && \
-    pacman --noconfirm -Syu
+FROM scratch AS base
+COPY --from=rootfs /mnt /
 
 # Clock
 ARG SYSTEM_OPT_TIMEZONE
-RUN ln -sf /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
+RUN ln --symbolic --force /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
 
 # Keymap hook
 ARG SYSTEM_OPT_KEYMAP
-RUN echo "KEYMAP=${SYSTEM_OPT_KEYMAP}" | tee /etc/vconsole.conf
+RUN echo "KEYMAP=${SYSTEM_OPT_KEYMAP}" > /etc/vconsole.conf
 
 # Language
-RUN echo "LANG=en_US.UTF-8" | tee /etc/locale.conf && \
-    echo "en_US.UTF-8 UTF-8" | tee /etc/locale.gen && \
-    locale-gen
-
-# Networking
-RUN pacman --noconfirm -S networkmanager && \
-    systemctl enable NetworkManager.service && \
-    systemctl mask systemd-networkd-wait-online.service
-
-## |
-## | OSTREE INSTALLATION
-## |
-
-# Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
-RUN mkdir -p /etc/mkinitcpio.conf.d && \
-    echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" >> /etc/mkinitcpio.conf.d/ostree.conf
-
-# Install kernel, firmware, microcode, filesystem tools, bootloader, depndencies and run hooks once:
-RUN pacman --noconfirm -S \
-    linux \
-    linux-headers \
-    linux-firmware \
-    amd-ucode \
-    \
-    dosfstools \
-    xfsprogs \
-    \
-    grub \
-    mkinitcpio \
-    \
-    podman \
-    ostree \
-    which
-
-# OSTree: Prepare microcode and initramfs
-RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) && \
-    cat /boot/*-ucode.img \
-        /boot/initramfs-linux-fallback.img \
-        > ${moduledir}/initramfs.img
-
-# OSTree: Bootloader integration
-RUN curl https://raw.githubusercontent.com/ostreedev/ostree/v2023.6/src/boot/grub2/grub2-15_ostree -o /etc/grub.d/15_ostree && \
-    chmod +x /etc/grub.d/15_ostree
-
-# Podman: native Overlay Diff for optimal Podman performance
-RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
+RUN echo 'LANG=en_US.UTF-8' > /etc/locale.conf \
+ && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
+ && locale-gen

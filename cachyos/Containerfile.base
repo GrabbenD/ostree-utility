@@ -1,0 +1,43 @@
+# |
+# | ROOTFS
+# |
+
+# Build a clean system in /mnt to avoid missing files from NoExtract option in upstream
+FROM docker.io/archlinux/archlinux:latest AS rootfs
+
+# Generate a GPG secret key for signing and import CachyOS keys
+RUN pacman-key --init \
+ && pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com \
+ && pacman-key --lsign-key F3B607488DB35A47
+
+# Import CachyOS x86_64-v3 repositories to current package manager
+COPY etc/pacman.conf /etc/
+RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist \
+ && curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-v3-mirrorlist/cachyos-v3-mirrorlist -o /etc/pacman.d/cachyos-v3-mirrorlist \
+ && pacman --noconfirm --sync --needed --refresh archlinux-keyring cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks
+
+# Perform a clean system installation with latest CachyOS packages in chroot to correctly execute hooks, this uses host's Pacman
+RUN pacman --noconfirm --sync --needed arch-install-scripts \
+ && pacstrap -K -P /mnt base \
+ && cp -av /etc/pacman.d/ /mnt/etc/
+
+# |
+# | BASE
+# |
+
+# Reusable base template
+FROM scratch AS base
+COPY --from=rootfs /mnt /
+
+# Clock
+ARG SYSTEM_OPT_TIMEZONE
+RUN ln --symbolic --force /usr/share/zoneinfo/${SYSTEM_OPT_TIMEZONE} /etc/localtime
+
+# Keymap hook
+ARG SYSTEM_OPT_KEYMAP
+RUN echo "KEYMAP=${SYSTEM_OPT_KEYMAP}" > /etc/vconsole.conf
+
+# Language
+RUN echo 'LANG=en_US.UTF-8' > /etc/locale.conf \
+ && echo 'en_US.UTF-8 UTF-8' > /etc/locale.gen \
+ && locale-gen

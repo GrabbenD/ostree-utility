@@ -1,22 +1,66 @@
 ## |
-## | CUSTOMIZE INSTALLATION
+## | OSTREE
 ## |
 
-# Extend any base image with this
-FROM localhost/ostree/base AS host
+# Customize your system here
+FROM localhost/ostree/base:latest AS host
+
+# Prepre OSTree integration (https://wiki.archlinux.org/title/Mkinitcpio#Common_hooks)
+RUN mkdir -p /etc/mkinitcpio.conf.d \
+ && echo "HOOKS=(base systemd ostree autodetect modconf kms keyboard sd-vconsole block filesystems fsck)" > /etc/mkinitcpio.conf.d/ostree.conf
+
+# Install kernel, firmware, microcode, filesystem tools, bootloader & ostree and run hooks once:
+RUN pacman --noconfirm --sync \
+    linux \
+    linux-headers \
+    \
+    linux-firmware \
+    amd-ucode \
+    \
+    dosfstools \
+    xfsprogs \
+    \
+    grub \
+    mkinitcpio \
+    \
+    podman \
+    ostree \
+    which
+
+# OSTree: Prepare microcode and initramfs
+RUN moduledir=$(find /usr/lib/modules -mindepth 1 -maxdepth 1 -type d) \
+ && cat /boot/*-ucode.img \
+        /boot/initramfs-linux-fallback.img \
+        > ${moduledir}/initramfs.img
+
+# OSTree: Bootloader integration
+RUN cp /usr/lib/libostree/* /etc/grub.d \
+ && chmod +x /etc/grub.d/15_ostree
+
+# Podman: native Overlay Diff for optimal Podman performance
+RUN echo "options overlay metacopy=off redirect_dir=off" > /etc/modprobe.d/disable-overlay-redirect-dir.conf
+
+## |
+## | CUSTOMIZE
+## |
 
 # Mount disk locations
 ARG OSTREE_SYS_BOOT_LABEL
 ARG OSTREE_SYS_ROOT_LABEL
 ARG OSTREE_SYS_HOME_LABEL
-RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime                                                                                           0 1" >> /etc/fstab && \
-    echo "LABEL=${OSTREE_SYS_HOME_LABEL} /var/home xfs  rw,relatime                                                                                           0 2" >> /etc/fstab && \
-    echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
+RUN echo "LABEL=${OSTREE_SYS_ROOT_LABEL} /         xfs  rw,relatime,noatime                                                                                   0 1" >> /etc/fstab \
+ && echo "LABEL=${OSTREE_SYS_HOME_LABEL} /var/home xfs  rw,relatime,noatime                                                                                   0 2" >> /etc/fstab \
+ && echo "LABEL=${OSTREE_SYS_BOOT_LABEL} /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro 0 2" >> /etc/fstab
 
-# Root password (todo move to secret)
+# Networking
+RUN pacman --noconfirm --sync networkmanager \
+ && systemctl enable NetworkManager.service \
+ && systemctl mask systemd-networkd-wait-online.service
+
+# Root password
 RUN echo "root:ostree" | chpasswd
 
 # SSHD
-RUN pacman --noconfirm -S openssh && \
-    systemctl enable sshd && \
-    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+RUN pacman --noconfirm -S openssh \
+ && systemctl enable sshd \
+ && echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
