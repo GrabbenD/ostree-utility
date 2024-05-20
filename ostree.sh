@@ -85,7 +85,7 @@ function DISK_CREATE_MOUNTS {
 
 # [OSTREE]: FIRST INITIALIZATION
 function OSTREE_CREATE_REPO {
-    ENV_CREATE_DEPS ostree wget which
+    ENV_CREATE_DEPS ostree which
     ostree admin init-fs --sysroot="${OSTREE_SYS_ROOT}" --modern ${OSTREE_SYS_ROOT}
     ostree admin stateroot-init --sysroot="${OSTREE_SYS_ROOT}" ${OSTREE_REP_NAME}
     ostree init --repo="${OSTREE_SYS_ROOT}/ostree/repo" --mode='bare'
