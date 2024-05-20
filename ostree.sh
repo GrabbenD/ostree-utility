@@ -308,7 +308,7 @@ function CLI_SETUP {
 
         # Commands
         if [[ ${CLI_ARG} == '--' ]]; then
-            case $CLI_VAL in
+            case ${CLI_VAL} in
                 'install')
                     ENV_CREATE_OPTS
 
@@ -340,10 +340,17 @@ function CLI_SETUP {
                     OSTREE_REVERT_IMAGE
                 ;;
 
-                'help' | *)
+                *)
+                    if [[ $(type -t ${CLI_VAL}) == 'function' ]]; then
+                        ENV_CREATE_OPTS
+                        ${CLI_VAL}
+                    fi
+                ;;
+
+                * | 'help')
                     local USAGE=(
                         'Usage:'
-                        '  ostree.sh <command> [options]'
+                        "  ${0##*/} <command|function> [options]"
                         'Commands:'
                         '  install : (Create deployment) : Partitions, formats and initializes a new OSTree repository'
                         '  upgrade : (Update deployment) : Creates a new OSTree commit'
@@ -363,9 +370,7 @@ function CLI_SETUP {
                         '  -q, --quiet               : (install/upgrade) : Reduce verbosity'
                     )
                     printf >&1 '%s\n' "${USAGE[@]}"
-                ;;&
 
-                *)
                     if [[ ${CLI_VAL} != 'help' && -n ${CLI_VAL} ]]; then
                         printf >&2 '\n%s\n' "${0##*/}: unrecognized command '${CLI_VAL}'"
                         exit 127
