@@ -345,7 +345,7 @@ function CLI_SETUP {
                         ENV_CREATE_OPTS
                         ${CLI_VAL}
                     fi
-                ;;
+                ;;&
 
                 * | 'help')
                     local USAGE=(
